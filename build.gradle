@@ -47,6 +47,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
         exclude group: "org.junit.vintage", module: "junit-vintage-engine"
     }
+    testRuntimeOnly("com.h2database:h2:2.1.214")
 
     //Swagger
     implementation("io.swagger:swagger-core:1.6.4")
