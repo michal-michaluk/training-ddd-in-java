@@ -1,4 +1,4 @@
-package devices.configuration.remote.iot16;
+package devices.configuration.protocols.iot16;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PathVariable;

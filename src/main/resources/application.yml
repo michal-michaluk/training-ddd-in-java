@@ -1,16 +1,30 @@
-spring.application.name: station-configuration
+spring.application.name: devices-configuration
 
 spring.kafka.consumer:
-  group-id: station-configuration-default
+  group-id: devices-configuration-default
   auto-offset-reset: earliest
 
 management:
   metrics.export.prometheus.enabled: true
   endpoint.env.enabled: true
   endpoints.web.exposure.include: "health,info,env,prometheus"
-  metrics.tags.application: station_configuration
 
-logging.config: "classpath:log4jconfig/log4j2.xml"
+logging.level:
+  org.apache.catalina.startup.DigesterFactory: ERROR
+  org.apache.catalina.util.LifecycleBase: ERROR
+  org.apache.coyote.http11.Http11NioProtocol: WARN
+  org.apache.sshd.common.util.SecurityUtils: WARN
+  org.apache.tomcat.util.net.NioSelectorPool: WARN
+  org.eclipse.jetty.util.component.AbstractLifeCycle: ERROR
+  org.hibernate.validator.internal.util.Version: WARN
+  org.springframework.boot.actuate.endpoint.jmx: WARN
+  org.springframework.web: INFO
+  org.apache.kafka: WARN
+  org.apache.kafka.clients.consumer.ConsumerConfig: INFO
+  org.apache.kafka.clients.producer.ProducerConfig: INFO
+  org.apache.kafka.clients.admin.AdminClientConfig: INFO
+  org.apache.kafka.common.utils.AppInfoParser: INFO
+  org.apache.kafka.streams.StreamsConfig: INFO
 
 spring:
   datasource:

@@ -1,4 +1,4 @@
-package devices.configuration.remote.iot20;
+package devices.configuration.protocols.iot20;
 
 import lombok.Value;
 
