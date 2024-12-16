@@ -1,8 +1,29 @@
-spring.application.name: devices-configuration
-
-spring.kafka.consumer:
-  group-id: devices-configuration-default
-  auto-offset-reset: earliest
+spring:
+  application.name: devices-configuration
+  main:
+    banner-mode: off
+  datasource:
+    driverClassName: org.postgresql.Driver
+    hikari:
+      maximumPoolSize: 15
+  jpa:
+    hibernate.ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+  liquibase:
+    change-log: classpath:db/db.changelog.yaml
+  kafka.consumer:
+    group-id: devices-configuration-default
+    auto-offset-reset: earliest
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: "https://keycloak.auth/realms/iot"
+server:
+  shutdown: graceful
+  error:
+    include-message: never
 
 management:
   metrics.export.prometheus.enabled: true
@@ -25,17 +46,3 @@ logging.level:
   org.apache.kafka.clients.admin.AdminClientConfig: INFO
   org.apache.kafka.common.utils.AppInfoParser: INFO
   org.apache.kafka.streams.StreamsConfig: INFO
-
-spring:
-  datasource:
-    driverClassName: org.postgresql.Driver
-    hikari:
-      maximumPoolSize: 15
-  jpa:
-    hibernate.ddl-auto: update
-    database-platform: org.hibernate.dialect.PostgreSQL10Dialect
-
-server:
-  shutdown: graceful
-  error:
-    include-message: always
