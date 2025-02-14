@@ -1,4 +1,4 @@
-name: Java CI with Gradle
+name: CI
 
 on:
   push:
@@ -24,6 +24,16 @@ jobs:
 
       - name: Build with Gradle Wrapper
         run: ./gradlew build
+
+      - name: Add coverage to PR
+        id: jacoco
+        uses: madrapps/jacoco-report@v1.7.1
+        with:
+          paths: |
+            ${{ github.workspace }}/**/build/reports/jacoco/**/*.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 0
+          min-coverage-changed-files: 80
 
   dependency-submission:
 
