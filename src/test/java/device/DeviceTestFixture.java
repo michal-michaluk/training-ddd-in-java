@@ -4,17 +4,11 @@ import devices.configuration.device.OpeningHours;
 import devices.configuration.device.Ownership;
 import devices.configuration.device.Settings;
 import lombok.Builder;
-
 import java.math.BigDecimal;
 public class DeviceTestFixture {
     public static Ownership someOwnership() {
         return new Ownership("Devicex.nl", "public-devices");
     }
-
-    public static Ownership someOtherOwnership() {
-        return new Ownership("Devicex.nl", "private-devices");
-    }
-
     public static Location someLocationInCity() {
         return new Location(
                 "Rakietowa",
@@ -28,14 +22,9 @@ public class DeviceTestFixture {
                 )
         );
     }
-
     public static Settings.SettingsBuilder someSettings() {
         return Settings.builder()
                 .publicAccess(true)
                 .showOnMap(true);
-    }
-
-    public static OpeningHours someOpeningHours() {
-        return OpeningHours.alwaysOpened();
     }
 }
