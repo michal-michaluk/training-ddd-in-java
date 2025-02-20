@@ -3,6 +3,7 @@ import devices.configuration.device.Location;
 import devices.configuration.device.Ownership;
 import devices.configuration.device.Settings;
 import java.math.BigDecimal;
+
 public class DeviceTestFixture {
     public static Ownership someOwnership() {
         return new Ownership("Devicex.nl", "public-devices");
@@ -22,6 +23,10 @@ public class DeviceTestFixture {
     }
     public static Settings.SettingsBuilder someSettings() {
         return Settings.builder()
+                .autoStart(false)
+                .remoteControl(false)
+                .billing(false)
+                .reimbursement(false)
                 .publicAccess(true)
                 .showOnMap(true);
     }

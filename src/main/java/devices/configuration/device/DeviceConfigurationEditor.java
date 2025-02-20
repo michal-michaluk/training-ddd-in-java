@@ -36,23 +36,35 @@ public class DeviceConfigurationEditor {
     }
 
     public void resetToDefault() {
-        this.openingHours=OpeningHours.alwaysOpened();
-        setLocation(null);
-        setSettings(Settings.defaultSettings());
+        if (!Objects.equals(this.openingHours, OpeningHours.alwaysOpened())) {
+            this.openingHours = OpeningHours.alwaysOpened();
+        }
+        if (!Objects.equals(this.location, null)) {
+            setLocation(null);
+        }
+        if (!Objects.equals(this.settings, Settings.defaultSettings())) {
+            setSettings(Settings.defaultSettings());
+        }
     }
 
     public void setSettings(Settings settings) {
-        this.settings=this.settings.merge(settings);
-        events.add(new DomainEvent.SettingsChanged(deviceId, settings));
+        if (!Objects.equals(this.settings, settings)) {
+            this.settings = this.settings.merge(settings);
+            events.add(new DomainEvent.SettingsChanged(deviceId, settings));
+        }
     }
 
     public void setLocation(Location location) {
-        this.location=location;
-        events.add(new DomainEvent.LocationChanged(deviceId, location));
+        if (!Objects.equals(this.location, location)) {
+            this.location = location;
+            events.add(new DomainEvent.LocationChanged(deviceId, location));
+        }
     }
     public void changeOpeningHours(OpeningHours openingHours) {
+        if (!Objects.equals(this.openingHours, openingHours)) {
             this.openingHours = openingHours;
             events.add(new DomainEvent.OpeningHoursChanged(deviceId, openingHours));
+        }
     }
 
     public void uninstallDevice() {
