@@ -1,9 +1,7 @@
 package device;
 import devices.configuration.device.Location;
-import devices.configuration.device.OpeningHours;
 import devices.configuration.device.Ownership;
 import devices.configuration.device.Settings;
-import lombok.Builder;
 import java.math.BigDecimal;
 public class DeviceTestFixture {
     public static Ownership someOwnership() {

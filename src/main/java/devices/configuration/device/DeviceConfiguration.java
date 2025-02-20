@@ -7,14 +7,4 @@ public record DeviceConfiguration(
         OpeningHours openingHours,
         Settings settings,
         Violations violations
-) {
-    public String toJson() {
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            return objectMapper.writeValueAsString(this);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "{}";  // Ktheni një JSON bosh në rast të gabimit
-        }
-    }
-}
+) { }
