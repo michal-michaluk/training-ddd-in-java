@@ -79,6 +79,17 @@ jacocoTestReport {
         xml.required = true
         csv.required = true
     }
+    classDirectories.setFrom(
+            files(
+                    (classDirectories.files as List).collect {
+                        fileTree(dir: it, exclude: [
+                                'tools/**',
+                                'devices/configuration/AppConfiguration.class',
+                                'devices/configuration/AppRunner.class'
+                        ])
+                    }
+            )
+    )
 }
 
 static defaultSetup(CompileOptions options) {
