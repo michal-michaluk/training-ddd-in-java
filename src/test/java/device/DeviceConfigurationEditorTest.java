@@ -1,6 +1,8 @@
 package device;
+
 import devices.configuration.device.*;
 import org.junit.jupiter.api.Test;
+import java.util.List;
 import static device.DeviceTestFixture.*;
 
 public class DeviceConfigurationEditorTest {
@@ -15,7 +17,13 @@ public class DeviceConfigurationEditorTest {
                 .hasLocation(null)
                 .hasOpeningHours(OpeningHours.alwaysOpened())
                 .hasSettings(Settings.defaultSettings())
-                .hasViolations(true, true, true, false, false);
+                .hasViolations(Violations.builder()
+                        .operatorNotAssigned(true)
+                        .providerNotAssigned(true)
+                        .locationMissing(true)
+                        .showOnMapButMissingLocation(false)
+                        .showOnMapButNoPublicAccess(false)
+                        .build());
     }
 
     @Test
@@ -23,12 +31,17 @@ public class DeviceConfigurationEditorTest {
         DeviceConfigurationEditor editor = DeviceConfigurationEditor.createNewDevice(deviceId);
         Ownership ownership = someOwnership();
         editor.assignToOwner(ownership);
+        List<DomainEvent> expectedEvents = List.of(new DomainEvent.OwnershipUpdated(deviceId, ownership));
         DeviceConfigurationAssert.assertThat(editor)
                 .hasOwnership(ownership)
-                .hasLocation(null)
-                .hasOpeningHours(OpeningHours.alwaysOpened())
-                .hasSettings(Settings.defaultSettings())
-                .hasViolations(false, false, true, false, false);
+                .hasEvents(expectedEvents)
+                .hasViolations(Violations.builder()
+                        .operatorNotAssigned(false)
+                        .providerNotAssigned(false)
+                        .locationMissing(true)
+                        .showOnMapButMissingLocation(false)
+                        .showOnMapButNoPublicAccess(false)
+                        .build());
     }
 
     @Test
@@ -42,7 +55,13 @@ public class DeviceConfigurationEditorTest {
                 .hasLocation(null)
                 .hasOpeningHours(OpeningHours.alwaysOpened())
                 .hasSettings(Settings.defaultSettings())
-                .hasViolations(true, true, true, false, false);
+                .hasViolations(Violations.builder()
+                        .operatorNotAssigned(true)
+                        .providerNotAssigned(true)
+                        .locationMissing(true)
+                        .showOnMapButMissingLocation(false)
+                        .showOnMapButNoPublicAccess(false)
+                        .build());
     }
 
     @Test
@@ -50,38 +69,53 @@ public class DeviceConfigurationEditorTest {
         DeviceConfigurationEditor editor = DeviceConfigurationEditor.createNewDevice(deviceId);
         Location location = someLocationInCity();
         editor.setLocation(location);
+        List<DomainEvent> expectedEvents = List.of(new DomainEvent.LocationChanged(deviceId, location));
         DeviceConfigurationAssert.assertThat(editor)
-                .hasOwnership(Ownership.unowned())
                 .hasLocation(location)
-                .hasOpeningHours(OpeningHours.alwaysOpened())
-                .hasSettings(Settings.defaultSettings())
-                .hasViolations(true, true, false, false, false);
+                .hasEvents(expectedEvents)
+                .hasViolations(Violations.builder()
+                        .operatorNotAssigned(true)
+                        .providerNotAssigned(true)
+                        .locationMissing(false)
+                        .showOnMapButMissingLocation(false)
+                        .showOnMapButNoPublicAccess(false)
+                        .build());
     }
 
     @Test
     void setSettings() {
         DeviceConfigurationEditor editor = DeviceConfigurationEditor.createNewDevice(deviceId);
-        Settings customSettings = someSettings().build();
-        editor.setSettings(customSettings);
+        Settings settings = someSettings().build();
+        editor.setSettings(settings);
+        List<DomainEvent> expectedEvents = List.of(new DomainEvent.SettingsChanged(deviceId, settings));
         DeviceConfigurationAssert.assertThat(editor)
-                .hasOwnership(Ownership.unowned())
-                .hasLocation(null)
-                .hasOpeningHours(OpeningHours.alwaysOpened())
-                .hasSettings(customSettings)
-                .hasViolations(true, true, true, true, false);
+                .hasSettings(settings)
+                .hasEvents(expectedEvents)
+                .hasViolations(Violations.builder()
+                        .operatorNotAssigned(true)
+                        .providerNotAssigned(true)
+                        .locationMissing(true)
+                        .showOnMapButMissingLocation(true)
+                        .showOnMapButNoPublicAccess(false)
+                        .build());
     }
 
     @Test
     void changeOpeningHours() {
         DeviceConfigurationEditor editor = DeviceConfigurationEditor.createNewDevice(deviceId);
-        OpeningHours openingHours = OpeningHours.alwaysOpened();
+        OpeningHours openingHours = OpeningHours.notAlwaysOpened();
         editor.changeOpeningHours(openingHours);
+        List<DomainEvent> expectedEvents = List.of(new DomainEvent.OpeningHoursChanged(deviceId, openingHours));
         DeviceConfigurationAssert.assertThat(editor)
-                .hasOwnership(Ownership.unowned())
-                .hasLocation(null)
                 .hasOpeningHours(openingHours)
-                .hasSettings(Settings.defaultSettings())
-                .hasViolations(true, true, true, false, false);
+                .hasEvents(expectedEvents)
+                .hasViolations(Violations.builder()
+                        .operatorNotAssigned(true)
+                        .providerNotAssigned(true)
+                        .locationMissing(true)
+                        .showOnMapButMissingLocation(false)
+                        .showOnMapButNoPublicAccess(false)
+                        .build());
     }
 
     @Test
@@ -89,12 +123,23 @@ public class DeviceConfigurationEditorTest {
         DeviceConfigurationEditor editor = DeviceConfigurationEditor.createNewDevice(deviceId);
         editor.assignToOwner(someOwnership());
         editor.uninstallDevice();
+        List<DomainEvent> expectedEvents = List.of(
+                new DomainEvent.OwnershipUpdated(deviceId, someOwnership()),
+                new DomainEvent.OwnershipUpdated(deviceId, Ownership.unowned()),
+                new DomainEvent.DeviceRemoved(deviceId));
         DeviceConfigurationAssert.assertThat(editor)
                 .hasOwnership(Ownership.unowned())
                 .hasLocation(null)
                 .hasOpeningHours(OpeningHours.alwaysOpened())
                 .hasSettings(Settings.defaultSettings())
-                .hasViolations(true, true, true, false, false);
+                .hasEvents(expectedEvents)
+                .hasViolations(Violations.builder()
+                        .operatorNotAssigned(true)
+                        .providerNotAssigned(true)
+                        .locationMissing(true)
+                        .showOnMapButMissingLocation(false)
+                        .showOnMapButNoPublicAccess(false)
+                        .build());
     }
 
     @Test
@@ -104,6 +149,12 @@ public class DeviceConfigurationEditorTest {
         editor.setLocation(someLocationInCity());
         editor.setSettings(someSettings().build());
         DeviceConfigurationAssert.assertThat(editor)
-                .hasNoViolations();
+                .hasViolations(Violations.builder()
+                        .operatorNotAssigned(false)
+                        .providerNotAssigned(false)
+                        .locationMissing(false)
+                        .showOnMapButMissingLocation(false)
+                        .showOnMapButNoPublicAccess(false)
+                        .build());
     }
 }

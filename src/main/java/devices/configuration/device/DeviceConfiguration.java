@@ -7,3 +7,4 @@ public record DeviceConfiguration(
         Settings settings,
         Violations violations
 ) {}
+

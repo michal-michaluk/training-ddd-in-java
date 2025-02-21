@@ -9,7 +9,7 @@ import java.util.Objects;
 @AllArgsConstructor
 public class DeviceConfigurationEditor {
     private final String deviceId;
-    final List<DomainEvent>events;
+    List<DomainEvent>events;
     private Ownership ownership;
     private Location location;
     private OpeningHours openingHours;
@@ -36,21 +36,16 @@ public class DeviceConfigurationEditor {
     }
 
     public void resetToDefault() {
-        if (!Objects.equals(this.openingHours, OpeningHours.alwaysOpened())) {
-            this.openingHours = OpeningHours.alwaysOpened();
-        }
-        if (!Objects.equals(this.location, null)) {
-            setLocation(null);
-        }
-        if (!Objects.equals(this.settings, Settings.defaultSettings())) {
-            setSettings(Settings.defaultSettings());
-        }
+        changeOpeningHours(OpeningHours.alwaysOpened());
+        setLocation(null);
+        setSettings(Settings.defaultSettings());
     }
 
     public void setSettings(Settings settings) {
-        if (!Objects.equals(this.settings, settings)) {
-            this.settings = this.settings.merge(settings);
-            events.add(new DomainEvent.SettingsChanged(deviceId, settings));
+        Settings set = this.settings.merge(settings);
+        if (!Objects.equals(this.settings, set)) {
+            this.settings = set;
+            events.add(new DomainEvent.SettingsChanged(deviceId, set));
         }
     }
 
@@ -68,8 +63,7 @@ public class DeviceConfigurationEditor {
     }
 
     public void uninstallDevice() {
-        this.ownership = Ownership.unowned();
-        resetToDefault();
+        assignToOwner(Ownership.unowned());
         events.add(new DomainEvent.DeviceRemoved(deviceId));
     }
 
@@ -86,5 +80,9 @@ public class DeviceConfigurationEditor {
     public DeviceConfiguration toDeviceConfiguration() {
         Violations violations = checkViolations();
         return new DeviceConfiguration(deviceId, ownership, location, openingHours, settings, violations);
+    }
+
+    public List<DomainEvent> getEvents() {
+        return events;
     }
 }

@@ -1,44 +1,50 @@
 package device;
+
 import devices.configuration.device.*;
 import org.assertj.core.api.Assertions;
 
+import java.util.List;
+
 public class DeviceConfigurationAssert {
     private final DeviceConfiguration actual;
-    private DeviceConfigurationAssert(DeviceConfiguration actual) {
+    private final List<DomainEvent> events;
+
+    private DeviceConfigurationAssert(DeviceConfiguration actual, List<DomainEvent> events) {
         this.actual = actual;
+        this.events = events;
     }
+
     public static DeviceConfigurationAssert assertThat(DeviceConfigurationEditor editor) {
-        return new DeviceConfigurationAssert(editor.toDeviceConfiguration());
+        return new DeviceConfigurationAssert(editor.toDeviceConfiguration(), editor.getEvents());
     }
+
     public DeviceConfigurationAssert hasOwnership(Ownership expected) {
         Assertions.assertThat(actual.ownership()).isEqualTo(expected);
         return this;
     }
+
     public DeviceConfigurationAssert hasLocation(Location expected) {
         Assertions.assertThat(actual.location()).isEqualTo(expected);
         return this;
     }
+
     public DeviceConfigurationAssert hasOpeningHours(OpeningHours expected) {
         Assertions.assertThat(actual.openingHours()).isEqualTo(expected);
         return this;
     }
+
     public DeviceConfigurationAssert hasSettings(Settings expected) {
         Assertions.assertThat(actual.settings()).isEqualTo(expected);
         return this;
     }
-    public DeviceConfigurationAssert hasViolations(boolean operatorNotAssigned,
-                                                   boolean providerNotAssigned,
-                                                   boolean locationMissing,
-                                                   boolean showOnMapButMissingLocation,
-                                                   boolean showOnMapButNoPublicAccess) {
-        Assertions.assertThat(actual.violations().operatorNotAssigned()).isEqualTo(operatorNotAssigned);
-        Assertions.assertThat(actual.violations().providerNotAssigned()).isEqualTo(providerNotAssigned);
-        Assertions.assertThat(actual.violations().locationMissing()).isEqualTo(locationMissing);
-        Assertions.assertThat(actual.violations().showOnMapButMissingLocation()).isEqualTo(showOnMapButMissingLocation);
-        Assertions.assertThat(actual.violations().showOnMapButNoPublicAccess()).isEqualTo(showOnMapButNoPublicAccess);
+
+    public DeviceConfigurationAssert hasViolations(Violations expected) {
+        Assertions.assertThat(actual.violations()).isEqualTo(expected);
         return this;
     }
-    public DeviceConfigurationAssert hasNoViolations() {
-        return hasViolations(false, false, false, false, false);
+
+    public DeviceConfigurationAssert hasEvents(List<DomainEvent> expectedEvents) {
+        Assertions.assertThat(events).isEqualTo(expectedEvents);
+        return this;
     }
 }

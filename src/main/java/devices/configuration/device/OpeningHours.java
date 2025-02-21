@@ -4,4 +4,7 @@ public record OpeningHours( Boolean alwaysOpen ) {
   public static OpeningHours alwaysOpened(){
       return new OpeningHours(true);
   }
+    public static OpeningHours notAlwaysOpened(){
+        return new OpeningHours(false);
+    }
 }
