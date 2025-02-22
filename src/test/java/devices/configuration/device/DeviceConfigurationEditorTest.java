@@ -2,8 +2,9 @@ package devices.configuration.device;
 
 import org.junit.jupiter.api.Test;
 
-import static devices.configuration.device.DeviceConfigurationAssert.assertEvents;
 import static devices.configuration.device.DeviceConfigurationAssert.assertThat;
+import static devices.configuration.device.DeviceConfigurationEventsAssert.assertEvents;
+import static devices.configuration.device.DeviceConfigurationEventsAssert.resetEvents;
 import static devices.configuration.device.DeviceTestFixture.*;
 import static devices.configuration.device.DomainEvent.*;
 
@@ -60,6 +61,8 @@ public class DeviceConfigurationEditorTest {
         DeviceConfigurationEditor editor = DeviceConfigurationEditor.createNewDevice(deviceId);
         editor.assignToOwner(someOwnership());
         editor.setLocation(someLocationInCity());
+        editor.setSettings(someSettings().build());
+        resetEvents(editor);
 
         editor.assignToOwner(Ownership.unowned());
 
@@ -75,6 +78,13 @@ public class DeviceConfigurationEditorTest {
                         .showOnMapButMissingLocation(false)
                         .showOnMapButNoPublicAccess(false)
                         .build());
+
+        assertEvents(editor)
+                .containsExactly(
+                        new OwnershipUpdated(deviceId, Ownership.unowned()),
+                        new LocationChanged(deviceId, null),
+                        new SettingsChanged(deviceId, Settings.defaultSettings())
+                );
     }
 
     @Test
@@ -150,6 +160,9 @@ public class DeviceConfigurationEditorTest {
     void uninstallDevice() {
         DeviceConfigurationEditor editor = DeviceConfigurationEditor.createNewDevice(deviceId);
         editor.assignToOwner(someOwnership());
+        editor.setLocation(someLocationInCity());
+        editor.setSettings(someSettings().build());
+        resetEvents(editor);
 
         editor.uninstallDevice();
 
@@ -168,9 +181,9 @@ public class DeviceConfigurationEditorTest {
 
         assertEvents(editor)
                 .containsExactly(
-                        new DeviceCreated(deviceId),
-                        new OwnershipUpdated(deviceId, someOwnership()),
                         new OwnershipUpdated(deviceId, Ownership.unowned()),
+                        new LocationChanged(deviceId, null),
+                        new SettingsChanged(deviceId, Settings.defaultSettings()),
                         new DomainEvent.DeviceRemoved(deviceId)
                 );
     }

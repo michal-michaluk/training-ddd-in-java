@@ -1,7 +1,6 @@
 package devices.configuration.device;
 
 import org.assertj.core.api.Assertions;
-import org.assertj.core.api.ListAssert;
 
 public class DeviceConfigurationAssert {
     private final DeviceConfiguration actual;
@@ -12,10 +11,6 @@ public class DeviceConfigurationAssert {
 
     public static DeviceConfigurationAssert assertThat(DeviceConfigurationEditor editor) {
         return new DeviceConfigurationAssert(editor.toDeviceConfiguration());
-    }
-
-    public static ListAssert<DomainEvent> assertEvents(DeviceConfigurationEditor editor) {
-        return Assertions.assertThat(editor.events);
     }
 
     public DeviceConfigurationAssert hasOwnership(Ownership expected) {
