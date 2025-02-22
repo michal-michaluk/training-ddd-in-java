@@ -43,10 +43,10 @@ public class DeviceConfigurationEditor {
     }
 
     public void setSettings(Settings settings) {
-        Settings set = this.settings.merge(settings);
-        if (!Objects.equals(this.settings, set)) {
-            this.settings = set;
-            events.add(new SettingsChanged(deviceId, set));
+        Settings merged = this.settings.merge(settings);
+        if (!Objects.equals(this.settings, merged)) {
+            this.settings = merged;
+            events.add(new SettingsChanged(deviceId, merged));
         }
     }
 
