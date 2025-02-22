@@ -1,11 +1,10 @@
-package device;
+package devices.configuration.device;
 
-import devices.configuration.device.*;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static device.DeviceTestFixture.*;
+import static devices.configuration.device.DeviceTestFixture.*;
 
 public class DeviceConfigurationEditorTest {
 

@@ -1,6 +1,5 @@
-package device;
+package devices.configuration.device;
 
-import devices.configuration.device.*;
 import org.assertj.core.api.Assertions;
 
 import java.util.List;

@@ -1,8 +1,4 @@
-package device;
-
-import devices.configuration.device.Location;
-import devices.configuration.device.Ownership;
-import devices.configuration.device.Settings;
+package devices.configuration.device;
 
 import java.math.BigDecimal;
 
