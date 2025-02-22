@@ -38,7 +38,7 @@ public class InstallationProcessTest {
     }
 
     @Test
-    void processFinishedAndAssignedNewDevice() {
+    void processFinishedAndAssignedInstaller() {
         process.finishProcess();
 
         IllegalStateException exception = assertThrows(IllegalStateException.class,
