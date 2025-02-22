@@ -4,8 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import static devices.configuration.device.DeviceConfigurationAssert.assertThat;
 import static devices.configuration.device.DeviceConfigurationEventsAssert.assertEvents;
-import static devices.configuration.device.DeviceConfigurationEventsAssert.resetEvents;
-import static devices.configuration.device.DeviceTestFixture.*;
+import static devices.configuration.device.DeviceConfigurationFixture.*;
 import static devices.configuration.device.DomainEvent.*;
 
 public class DeviceConfigurationEditorTest {
@@ -58,11 +57,11 @@ public class DeviceConfigurationEditorTest {
 
     @Test
     void resetToDefault() {
-        DeviceConfigurationEditor editor = DeviceConfigurationEditor.createNewDevice(deviceId);
-        editor.assignToOwner(someOwnership());
-        editor.setLocation(someLocationInCity());
-        editor.setSettings(someSettings().build());
-        resetEvents(editor);
+        DeviceConfigurationEditor editor = given(deviceId, e -> {
+            e.assignToOwner(someOwnership());
+            e.setLocation(someLocationInCity());
+            e.setSettings(someSettings().build());
+        });
 
         editor.assignToOwner(Ownership.unowned());
 
@@ -158,11 +157,11 @@ public class DeviceConfigurationEditorTest {
 
     @Test
     void uninstallDevice() {
-        DeviceConfigurationEditor editor = DeviceConfigurationEditor.createNewDevice(deviceId);
-        editor.assignToOwner(someOwnership());
-        editor.setLocation(someLocationInCity());
-        editor.setSettings(someSettings().build());
-        resetEvents(editor);
+        DeviceConfigurationEditor editor = given(deviceId, e -> {
+            e.assignToOwner(someOwnership());
+            e.setLocation(someLocationInCity());
+            e.setSettings(someSettings().build());
+        });
 
         editor.uninstallDevice();
 

@@ -1,8 +1,22 @@
 package devices.configuration.device;
 
 import java.math.BigDecimal;
+import java.util.function.Consumer;
 
-public class DeviceTestFixture {
+public class DeviceConfigurationFixture {
+
+    static DeviceConfigurationEditor given(String deviceId) {
+        return given(deviceId, e -> {
+        });
+    }
+
+    static DeviceConfigurationEditor given(String deviceId, Consumer<DeviceConfigurationEditor> customize) {
+        var editor = DeviceConfigurationEditor.createNewDevice(deviceId);
+        customize.accept(editor);
+        DeviceConfigurationEventsAssert.resetEvents(editor);
+        return editor;
+    }
+
     public static Ownership someOwnership() {
         return new Ownership("Devicex.nl", "public-devices");
     }
