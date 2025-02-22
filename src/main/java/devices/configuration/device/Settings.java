@@ -4,13 +4,12 @@ import lombok.Builder;
 
 @Builder
 public record Settings(
-       Boolean autoStart,
-       Boolean remoteControl,
-       Boolean billing,
-       Boolean reimbursement,
-       Boolean showOnMap,
-       Boolean publicAccess)
-{
+        Boolean autoStart,
+        Boolean remoteControl,
+        Boolean billing,
+        Boolean reimbursement,
+        Boolean showOnMap,
+        Boolean publicAccess) {
 
     public static Settings defaultSettings() {
         return Settings.builder()
@@ -22,9 +21,9 @@ public record Settings(
                 .publicAccess(false).build();
     }
 
-    public Settings merge(Settings given){
+    public Settings merge(Settings given) {
         return Settings.builder()
-                .autoStart(coalesce(given.autoStart, this.autoStart ))
+                .autoStart(coalesce(given.autoStart, this.autoStart))
                 .remoteControl(coalesce(given.remoteControl, this.remoteControl))
                 .billing(coalesce(given.billing, this.billing))
                 .reimbursement(coalesce(given.reimbursement, this.reimbursement))
@@ -33,7 +32,7 @@ public record Settings(
                 .build();
     }
 
-    private static Boolean coalesce(Boolean given, Boolean that){
-        return given==null? that:given;
+    private static Boolean coalesce(Boolean given, Boolean that) {
+        return given == null ? that : given;
     }
 }

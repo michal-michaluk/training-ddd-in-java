@@ -9,28 +9,28 @@ import java.util.Objects;
 @AllArgsConstructor
 public class DeviceConfigurationEditor {
     private final String deviceId;
-    List<DomainEvent>events;
+    List<DomainEvent> events;
     private Ownership ownership;
     private Location location;
     private OpeningHours openingHours;
     private Settings settings;
 
-    public static DeviceConfigurationEditor createNewDevice(String deviceId){
-    return new DeviceConfigurationEditor(
-            deviceId,
-            new ArrayList<>(),
-            Ownership.unowned(),
-            null,
-            OpeningHours.alwaysOpened(),
-            Settings.defaultSettings());
+    public static DeviceConfigurationEditor createNewDevice(String deviceId) {
+        return new DeviceConfigurationEditor(
+                deviceId,
+                new ArrayList<>(),
+                Ownership.unowned(),
+                null,
+                OpeningHours.alwaysOpened(),
+                Settings.defaultSettings());
     }
-    
-    public void assignToOwner(Ownership ownership){
-        if(!Objects.equals(this.ownership,ownership)){
-            this.ownership=ownership;
+
+    public void assignToOwner(Ownership ownership) {
+        if (!Objects.equals(this.ownership, ownership)) {
+            this.ownership = ownership;
             events.add(new DomainEvent.OwnershipUpdated(deviceId, ownership));
         }
-        if(this.ownership.isUnowned()){
+        if (this.ownership.isUnowned()) {
             resetToDefault();
         }
     }
@@ -55,6 +55,7 @@ public class DeviceConfigurationEditor {
             events.add(new DomainEvent.LocationChanged(deviceId, location));
         }
     }
+
     public void changeOpeningHours(OpeningHours openingHours) {
         if (!Objects.equals(this.openingHours, openingHours)) {
             this.openingHours = openingHours;

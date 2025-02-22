@@ -2,7 +2,9 @@ package device;
 
 import devices.configuration.device.*;
 import org.junit.jupiter.api.Test;
+
 import java.util.List;
+
 import static device.DeviceTestFixture.*;
 
 public class DeviceConfigurationEditorTest {
