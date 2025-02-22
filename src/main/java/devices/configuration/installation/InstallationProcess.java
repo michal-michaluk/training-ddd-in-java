@@ -12,6 +12,7 @@ public class InstallationProcess {
     private boolean isFinished;
     private String deviceId;
     private String installerId;
+    private boolean bootConfirmed;
 
     public InstallationProcess(String orderId) {
         if (existingOrders.contains(orderId)) {
@@ -45,5 +46,15 @@ public class InstallationProcess {
         if (!Objects.equals(this.installerId, installerId)) {
             this.installerId = installerId;
         }
+    }
+
+    public void receiveBootNotification(BootNotification bootNotification) {
+        if (isFinished) {
+            return;
+        }
+        if (!bootNotification.deviceId().equals(deviceId)) {
+            throw new IllegalArgumentException("Boot Notification device does not match assigned device!");
+        }
+        bootConfirmed = true;
     }
 }

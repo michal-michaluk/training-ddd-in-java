@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class InstallationProcessTest {
 
     private InstallationProcess process;
-    private String orderId = "order-001";
+    private final String orderId = "order-001";
 
     @BeforeEach
     void setUp() {
