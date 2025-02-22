@@ -65,4 +65,26 @@ public class InstallationProcessTest {
 
         assertDoesNotThrow(() -> process.receiveBootNotification(new BootNotification("cool-device")));
     }
+
+    @Test
+    void bootNotificationUpdated() {
+        process.assignDevice("cool-device");
+        process.receiveBootNotification(new BootNotification("cool-device"));
+        process.confirmBootNotification();
+
+        process.updateBootNotification(new BootNotification("cool-device"));
+
+        assertFalse(process.isBootConfirmed());
+    }
+
+    @Test
+    void shouldAllowNewDeviceAssignmentButRequireBootNotificationAgain() {
+        process.assignDevice("cool-device");
+        process.receiveBootNotification(new BootNotification("cool-device"));
+        process.confirmBootNotification();
+
+        process.assignDevice("device-456");
+
+        assertFalse(process.isBootConfirmed());
+    }
 }
