@@ -2,9 +2,10 @@ package devices.configuration.device;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
+import static devices.configuration.device.DeviceConfigurationAssert.assertEvents;
+import static devices.configuration.device.DeviceConfigurationAssert.assertThat;
 import static devices.configuration.device.DeviceTestFixture.*;
+import static devices.configuration.device.DomainEvent.*;
 
 public class DeviceConfigurationEditorTest {
 
@@ -13,7 +14,8 @@ public class DeviceConfigurationEditorTest {
     @Test
     void createNewDevice() {
         DeviceConfigurationEditor editor = DeviceConfigurationEditor.createNewDevice(deviceId);
-        DeviceConfigurationAssert.assertThat(editor)
+
+        assertThat(editor)
                 .hasOwnership(Ownership.unowned())
                 .hasLocation(null)
                 .hasOpeningHours(OpeningHours.alwaysOpened())
@@ -25,17 +27,20 @@ public class DeviceConfigurationEditorTest {
                         .showOnMapButMissingLocation(false)
                         .showOnMapButNoPublicAccess(false)
                         .build());
+
+        assertEvents(editor)
+                .containsExactly();
     }
 
     @Test
     void assignOwnership() {
         DeviceConfigurationEditor editor = DeviceConfigurationEditor.createNewDevice(deviceId);
+
         Ownership ownership = someOwnership();
         editor.assignToOwner(ownership);
-        List<DomainEvent> expectedEvents = List.of(new DomainEvent.OwnershipUpdated(deviceId, ownership));
-        DeviceConfigurationAssert.assertThat(editor)
+
+        assertThat(editor)
                 .hasOwnership(ownership)
-                .hasEvents(expectedEvents)
                 .hasViolations(Violations.builder()
                         .operatorNotAssigned(false)
                         .providerNotAssigned(false)
@@ -43,6 +48,9 @@ public class DeviceConfigurationEditorTest {
                         .showOnMapButMissingLocation(false)
                         .showOnMapButNoPublicAccess(false)
                         .build());
+
+        assertEvents(editor)
+                .containsExactly(new OwnershipUpdated(deviceId, ownership));
     }
 
     @Test
@@ -50,8 +58,10 @@ public class DeviceConfigurationEditorTest {
         DeviceConfigurationEditor editor = DeviceConfigurationEditor.createNewDevice(deviceId);
         editor.assignToOwner(someOwnership());
         editor.setLocation(someLocationInCity());
+
         editor.assignToOwner(Ownership.unowned());
-        DeviceConfigurationAssert.assertThat(editor)
+
+        assertThat(editor)
                 .hasOwnership(Ownership.unowned())
                 .hasLocation(null)
                 .hasOpeningHours(OpeningHours.alwaysOpened())
@@ -68,12 +78,12 @@ public class DeviceConfigurationEditorTest {
     @Test
     void setLocation() {
         DeviceConfigurationEditor editor = DeviceConfigurationEditor.createNewDevice(deviceId);
+
         Location location = someLocationInCity();
         editor.setLocation(location);
-        List<DomainEvent> expectedEvents = List.of(new DomainEvent.LocationChanged(deviceId, location));
-        DeviceConfigurationAssert.assertThat(editor)
+
+        assertThat(editor)
                 .hasLocation(location)
-                .hasEvents(expectedEvents)
                 .hasViolations(Violations.builder()
                         .operatorNotAssigned(true)
                         .providerNotAssigned(true)
@@ -81,17 +91,20 @@ public class DeviceConfigurationEditorTest {
                         .showOnMapButMissingLocation(false)
                         .showOnMapButNoPublicAccess(false)
                         .build());
+
+        assertEvents(editor)
+                .containsExactly(new LocationChanged(deviceId, location));
     }
 
     @Test
     void setSettings() {
         DeviceConfigurationEditor editor = DeviceConfigurationEditor.createNewDevice(deviceId);
+
         Settings settings = someSettings().build();
         editor.setSettings(settings);
-        List<DomainEvent> expectedEvents = List.of(new DomainEvent.SettingsChanged(deviceId, settings));
-        DeviceConfigurationAssert.assertThat(editor)
+
+        assertThat(editor)
                 .hasSettings(settings)
-                .hasEvents(expectedEvents)
                 .hasViolations(Violations.builder()
                         .operatorNotAssigned(true)
                         .providerNotAssigned(true)
@@ -99,17 +112,20 @@ public class DeviceConfigurationEditorTest {
                         .showOnMapButMissingLocation(true)
                         .showOnMapButNoPublicAccess(false)
                         .build());
+
+        assertEvents(editor)
+                .containsExactly(new SettingsChanged(deviceId, settings));
     }
 
     @Test
     void changeOpeningHours() {
         DeviceConfigurationEditor editor = DeviceConfigurationEditor.createNewDevice(deviceId);
+
         OpeningHours openingHours = OpeningHours.notAlwaysOpened();
         editor.changeOpeningHours(openingHours);
-        List<DomainEvent> expectedEvents = List.of(new DomainEvent.OpeningHoursChanged(deviceId, openingHours));
-        DeviceConfigurationAssert.assertThat(editor)
+
+        assertThat(editor)
                 .hasOpeningHours(openingHours)
-                .hasEvents(expectedEvents)
                 .hasViolations(Violations.builder()
                         .operatorNotAssigned(true)
                         .providerNotAssigned(true)
@@ -117,23 +133,23 @@ public class DeviceConfigurationEditorTest {
                         .showOnMapButMissingLocation(false)
                         .showOnMapButNoPublicAccess(false)
                         .build());
+
+        assertEvents(editor)
+                .containsExactly(new OpeningHoursChanged(deviceId, openingHours));
     }
 
     @Test
     void uninstallDevice() {
         DeviceConfigurationEditor editor = DeviceConfigurationEditor.createNewDevice(deviceId);
         editor.assignToOwner(someOwnership());
+
         editor.uninstallDevice();
-        List<DomainEvent> expectedEvents = List.of(
-                new DomainEvent.OwnershipUpdated(deviceId, someOwnership()),
-                new DomainEvent.OwnershipUpdated(deviceId, Ownership.unowned()),
-                new DomainEvent.DeviceRemoved(deviceId));
-        DeviceConfigurationAssert.assertThat(editor)
+
+        assertThat(editor)
                 .hasOwnership(Ownership.unowned())
                 .hasLocation(null)
                 .hasOpeningHours(OpeningHours.alwaysOpened())
                 .hasSettings(Settings.defaultSettings())
-                .hasEvents(expectedEvents)
                 .hasViolations(Violations.builder()
                         .operatorNotAssigned(true)
                         .providerNotAssigned(true)
@@ -141,15 +157,24 @@ public class DeviceConfigurationEditorTest {
                         .showOnMapButMissingLocation(false)
                         .showOnMapButNoPublicAccess(false)
                         .build());
+
+        assertEvents(editor)
+                .containsExactly(
+                        new OwnershipUpdated(deviceId, someOwnership()),
+                        new OwnershipUpdated(deviceId, Ownership.unowned()),
+                        new DomainEvent.DeviceRemoved(deviceId)
+                );
     }
 
     @Test
-    void checkViolations() {
+    void checkNoViolations() {
         DeviceConfigurationEditor editor = DeviceConfigurationEditor.createNewDevice(deviceId);
+
         editor.assignToOwner(someOwnership());
         editor.setLocation(someLocationInCity());
         editor.setSettings(someSettings().build());
-        DeviceConfigurationAssert.assertThat(editor)
+
+        assertThat(editor)
                 .hasViolations(Violations.builder()
                         .operatorNotAssigned(false)
                         .providerNotAssigned(false)

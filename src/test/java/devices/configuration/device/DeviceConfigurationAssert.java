@@ -1,20 +1,21 @@
 package devices.configuration.device;
 
 import org.assertj.core.api.Assertions;
-
-import java.util.List;
+import org.assertj.core.api.ListAssert;
 
 public class DeviceConfigurationAssert {
     private final DeviceConfiguration actual;
-    private final List<DomainEvent> events;
 
-    private DeviceConfigurationAssert(DeviceConfiguration actual, List<DomainEvent> events) {
+    private DeviceConfigurationAssert(DeviceConfiguration actual) {
         this.actual = actual;
-        this.events = events;
     }
 
     public static DeviceConfigurationAssert assertThat(DeviceConfigurationEditor editor) {
-        return new DeviceConfigurationAssert(editor.toDeviceConfiguration(), editor.getEvents());
+        return new DeviceConfigurationAssert(editor.toDeviceConfiguration());
+    }
+
+    public static ListAssert<DomainEvent> assertEvents(DeviceConfigurationEditor editor) {
+        return Assertions.assertThat(editor.events);
     }
 
     public DeviceConfigurationAssert hasOwnership(Ownership expected) {
@@ -39,11 +40,6 @@ public class DeviceConfigurationAssert {
 
     public DeviceConfigurationAssert hasViolations(Violations expected) {
         Assertions.assertThat(actual.violations()).isEqualTo(expected);
-        return this;
-    }
-
-    public DeviceConfigurationAssert hasEvents(List<DomainEvent> expectedEvents) {
-        Assertions.assertThat(events).isEqualTo(expectedEvents);
         return this;
     }
 }
