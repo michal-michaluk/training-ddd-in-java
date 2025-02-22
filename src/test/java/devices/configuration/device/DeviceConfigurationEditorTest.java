@@ -29,7 +29,7 @@ public class DeviceConfigurationEditorTest {
                         .build());
 
         assertEvents(editor)
-                .containsExactly();
+                .containsExactly(new DeviceCreated(deviceId));
     }
 
     @Test
@@ -50,7 +50,9 @@ public class DeviceConfigurationEditorTest {
                         .build());
 
         assertEvents(editor)
-                .containsExactly(new OwnershipUpdated(deviceId, ownership));
+                .containsExactly(
+                        new DeviceCreated(deviceId),
+                        new OwnershipUpdated(deviceId, ownership));
     }
 
     @Test
@@ -93,7 +95,9 @@ public class DeviceConfigurationEditorTest {
                         .build());
 
         assertEvents(editor)
-                .containsExactly(new LocationChanged(deviceId, location));
+                .containsExactly(
+                        new DeviceCreated(deviceId),
+                        new LocationChanged(deviceId, location));
     }
 
     @Test
@@ -114,7 +118,9 @@ public class DeviceConfigurationEditorTest {
                         .build());
 
         assertEvents(editor)
-                .containsExactly(new SettingsChanged(deviceId, settings));
+                .containsExactly(
+                        new DeviceCreated(deviceId),
+                        new SettingsChanged(deviceId, settings));
     }
 
     @Test
@@ -135,7 +141,9 @@ public class DeviceConfigurationEditorTest {
                         .build());
 
         assertEvents(editor)
-                .containsExactly(new OpeningHoursChanged(deviceId, openingHours));
+                .containsExactly(
+                        new DeviceCreated(deviceId),
+                        new OpeningHoursChanged(deviceId, openingHours));
     }
 
     @Test
@@ -160,6 +168,7 @@ public class DeviceConfigurationEditorTest {
 
         assertEvents(editor)
                 .containsExactly(
+                        new DeviceCreated(deviceId),
                         new OwnershipUpdated(deviceId, someOwnership()),
                         new OwnershipUpdated(deviceId, Ownership.unowned()),
                         new DomainEvent.DeviceRemoved(deviceId)

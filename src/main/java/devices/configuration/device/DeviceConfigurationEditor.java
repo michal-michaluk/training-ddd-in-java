@@ -1,5 +1,6 @@
 package devices.configuration.device;
 
+import devices.configuration.device.DomainEvent.*;
 import lombok.AllArgsConstructor;
 
 import java.util.ArrayList;
@@ -18,7 +19,7 @@ public class DeviceConfigurationEditor {
     public static DeviceConfigurationEditor createNewDevice(String deviceId) {
         return new DeviceConfigurationEditor(
                 deviceId,
-                new ArrayList<>(),
+                new ArrayList<>(List.of(new DeviceCreated(deviceId))),
                 Ownership.unowned(),
                 null,
                 OpeningHours.alwaysOpened(),
@@ -28,7 +29,7 @@ public class DeviceConfigurationEditor {
     public void assignToOwner(Ownership ownership) {
         if (!Objects.equals(this.ownership, ownership)) {
             this.ownership = ownership;
-            events.add(new DomainEvent.OwnershipUpdated(deviceId, ownership));
+            events.add(new OwnershipUpdated(deviceId, ownership));
         }
         if (this.ownership.isUnowned()) {
             resetToDefault();
@@ -45,27 +46,27 @@ public class DeviceConfigurationEditor {
         Settings set = this.settings.merge(settings);
         if (!Objects.equals(this.settings, set)) {
             this.settings = set;
-            events.add(new DomainEvent.SettingsChanged(deviceId, set));
+            events.add(new SettingsChanged(deviceId, set));
         }
     }
 
     public void setLocation(Location location) {
         if (!Objects.equals(this.location, location)) {
             this.location = location;
-            events.add(new DomainEvent.LocationChanged(deviceId, location));
+            events.add(new LocationChanged(deviceId, location));
         }
     }
 
     public void changeOpeningHours(OpeningHours openingHours) {
         if (!Objects.equals(this.openingHours, openingHours)) {
             this.openingHours = openingHours;
-            events.add(new DomainEvent.OpeningHoursChanged(deviceId, openingHours));
+            events.add(new OpeningHoursChanged(deviceId, openingHours));
         }
     }
 
     public void uninstallDevice() {
         assignToOwner(Ownership.unowned());
-        events.add(new DomainEvent.DeviceRemoved(deviceId));
+        events.add(new DeviceRemoved(deviceId));
     }
 
     public Violations checkViolations() {
@@ -81,9 +82,5 @@ public class DeviceConfigurationEditor {
     public DeviceConfiguration toDeviceConfiguration() {
         Violations violations = checkViolations();
         return new DeviceConfiguration(deviceId, ownership, location, openingHours, settings, violations);
-    }
-
-    public List<DomainEvent> getEvents() {
-        return events;
     }
 }
