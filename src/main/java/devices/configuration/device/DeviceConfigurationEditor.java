@@ -10,7 +10,7 @@ import java.util.Objects;
 @AllArgsConstructor
 public class DeviceConfigurationEditor {
     private final String deviceId;
-    List<DomainEvent> events;
+    final List<DomainEvent> events;
     private Ownership ownership;
     private Location location;
     private OpeningHours openingHours;
