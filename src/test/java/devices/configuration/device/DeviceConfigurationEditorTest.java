@@ -156,6 +156,22 @@ public class DeviceConfigurationEditorTest {
     }
 
     @Test
+    void noEventsEmittedWhenValuesAreTheSame() {
+        DeviceConfigurationEditor editor = given(deviceId, e -> {
+            e.assignToOwner(someOwnership());
+            e.setLocation(someLocationInCity());
+            e.setSettings(someSettings().build());
+        });
+
+        editor.assignToOwner(someOwnership());
+        editor.setLocation(someLocationInCity());
+        editor.setSettings(someSettings().build());
+
+        assertEvents(editor)
+                .isEmpty();
+    }
+
+    @Test
     void uninstallDevice() {
         DeviceConfigurationEditor editor = given(deviceId, e -> {
             e.assignToOwner(someOwnership());
@@ -202,6 +218,28 @@ public class DeviceConfigurationEditorTest {
                         .locationMissing(false)
                         .showOnMapButMissingLocation(false)
                         .showOnMapButNoPublicAccess(false)
+                        .build());
+    }
+
+    @Test
+    void checkViolationsForInconsistentSettings() {
+        DeviceConfigurationEditor editor = DeviceConfigurationEditor.createNewDevice(deviceId);
+
+        editor.assignToOwner(someOwnership());
+        editor.setLocation(someLocationInCity());
+        editor.setSettings(someSettings()
+                .showOnMap(true)
+                .publicAccess(false)
+                .build()
+        );
+
+        assertThat(editor)
+                .hasViolations(Violations.builder()
+                        .operatorNotAssigned(false)
+                        .providerNotAssigned(false)
+                        .locationMissing(false)
+                        .showOnMapButMissingLocation(false)
+                        .showOnMapButNoPublicAccess(true)
                         .build());
     }
 }
