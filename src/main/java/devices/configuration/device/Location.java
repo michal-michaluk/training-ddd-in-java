@@ -15,5 +15,6 @@ public record Location(
 
     public record Coordinates(
             BigDecimal longitude,
-            BigDecimal latitude) {}
+            BigDecimal latitude) {
+    }
 }

@@ -1,56 +1,31 @@
 package installation;
 
 import devices.configuration.device.Location;
-import devices.configuration.device.Ownership;
 import devices.configuration.installation.BootNotification;
 import devices.configuration.installation.InstallationProcess;
 import devices.configuration.installation.WorkOrder;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigDecimal;
-
+import static installation.InstallationProcessFixture.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class InstallationProcessTest {
 
-    private static final String orderId = "K56F";
-    private static final String deviceId = "ALF-83266831";
-    private static final String installerId = "INSTALLER-456";
+    private final String orderId = "K56F";
+    private final String deviceId = "ALF-83266831";
+    private final String installerId = "INSTALLER-456";
 
-    private static final BootNotification DEFAULT_BOOT = BootNotification.builder()
-            .deviceId(deviceId)
-            .protocol(BootNotification.Protocols.IoT20)
-            .vendor("EVSE")
-            .model("UltraCharge")
-            .serial("123-ABC")
-            .firmware("v2.0")
-            .build();
-
-    private static final Location someLocation = Location.builder()
-            .street("Rakietowa")
-            .houseNumber("1A")
-            .city("Wrocław")
-            .postalCode("54-621")
-            .country("POL")
-            .coordinates(new Location.Coordinates(new BigDecimal("16.931752852309156"), new BigDecimal("51.09836221719513")))
-            .build();
-
+    private BootNotification defaultBoot;
+    private Location someLocation;
     private WorkOrder workOrder;
     private InstallationProcess process;
 
     @BeforeEach
     void setUp() {
-        Ownership ownership = Ownership.builder()
-                .operator("Devicex.nl")
-                .provider("public-devices")
-                .build();
-
-        workOrder = WorkOrder.builder()
-                .orderId(orderId)
-                .ownership(ownership)
-                .build();
+        defaultBoot = defaultNotification();
+        someLocation = someLocation();
+        workOrder = defaultOrder();
 
         process = new InstallationProcess(workOrder);
     }
@@ -64,6 +39,7 @@ public class InstallationProcessTest {
 
     @Test
     void whenAssignInstallerAfterFinish_thenThrowException() {
+        process = processInProgress();
         process.finish();
 
         assertThrows(IllegalStateException.class, () ->
@@ -73,6 +49,7 @@ public class InstallationProcessTest {
 
     @Test
     void whenAssignDeviceAfterFinish_thenThrowException() {
+        process = processInProgress();
         process.finish();
 
         assertThrows(IllegalStateException.class, () ->
@@ -82,37 +59,38 @@ public class InstallationProcessTest {
 
     @Test
     void ignoreBootNotification_ifProcessFinished() {
-        process.assignDevice(deviceId);
+        process = processInProgress();
         process.finish();
 
-        assertDoesNotThrow(() -> process.receiveBootNotification(DEFAULT_BOOT));
+        BootNotification newBoot = defaultBoot.toBuilder().firmware("v2.1").build();
+        process.receiveBootNotification(newBoot);
 
         assertNull(process.getPendingBootNotification());
-        assertNull(process.getConfirmedBootNotification());
+        assertEquals(defaultBoot, process.getConfirmedBootNotification());
     }
 
     @Test
     void whenReceivingNewBootNotification_thenStoreAsPending() {
         process.assignDevice(deviceId);
 
-        process.receiveBootNotification(DEFAULT_BOOT);
+        process.receiveBootNotification(defaultBoot);
 
         assertNotNull(process.getPendingBootNotification());
-        assertEquals(DEFAULT_BOOT, process.getPendingBootNotification());
+        assertEquals(defaultBoot, process.getPendingBootNotification());
     }
 
     @Test
     void whenDeviceNotMatchBootNotification_thenThrowException() {
         // no device assigned
         assertThrows(IllegalStateException.class, () ->
-                process.receiveBootNotification(DEFAULT_BOOT)
+                process.receiveBootNotification(defaultBoot)
         );
 
         // assign not matching device
         process.assignDevice("wrong-device");
 
         assertThrows(IllegalStateException.class, () ->
-                process.receiveBootNotification(DEFAULT_BOOT)
+                process.receiveBootNotification(defaultBoot)
         );
     }
 
@@ -128,46 +106,47 @@ public class InstallationProcessTest {
     @Test
     void whenConfirmBoot_thenUpdateConfirmedAndClearPending() {
         process.assignDevice(deviceId);
-        process.receiveBootNotification(DEFAULT_BOOT);
+        process.receiveBootNotification(defaultBoot);
         process.confirmBoot();
 
         assertNull(process.getPendingBootNotification());
-        assertEquals(DEFAULT_BOOT, process.getConfirmedBootNotification());
+        assertEquals(defaultBoot, process.getConfirmedBootNotification());
     }
 
     @Test
     void whenUpdatingAnyBootNotificationField_thenRequireNewConfirmation() {
         process.assignDevice(deviceId);
-        process.receiveBootNotification(DEFAULT_BOOT);
+        process.receiveBootNotification(defaultBoot);
         process.confirmBoot();
 
-        BootNotification updatedBoot = DEFAULT_BOOT.toBuilder()
+        BootNotification updatedBoot = defaultBoot.toBuilder()
                 .firmware("v2.1")
                 .build();
         process.receiveBootNotification(updatedBoot);
 
         assertNotNull(process.getPendingBootNotification());
         assertEquals(updatedBoot, process.getPendingBootNotification());
-        assertNotEquals(DEFAULT_BOOT, process.getPendingBootNotification());
+        assertNotEquals(defaultBoot, process.getPendingBootNotification());
+        assertEquals(defaultBoot, process.getConfirmedBootNotification());
     }
 
     @Test
     void whenResendingSameBootNotificationData_thenNoPending() {
         process.assignDevice(deviceId);
-        process.receiveBootNotification(DEFAULT_BOOT);
+        process.receiveBootNotification(defaultBoot);
         process.confirmBoot();
 
-        BootNotification sameBoot = DEFAULT_BOOT.toBuilder().build();
+        BootNotification sameBoot = defaultBoot.toBuilder().build();
         process.receiveBootNotification(sameBoot);
 
         assertNull(process.getPendingBootNotification());
-        assertEquals(DEFAULT_BOOT, process.getConfirmedBootNotification());
+        assertEquals(defaultBoot, process.getConfirmedBootNotification());
     }
 
     @Test
     void whenAssigningNewDeviceAfterBoot_thenRequireNewNotification() {
         process.assignDevice(deviceId);
-        process.receiveBootNotification(DEFAULT_BOOT);
+        process.receiveBootNotification(defaultBoot);
         process.confirmBoot();
 
         String newDeviceId = "new-device";
@@ -191,7 +170,7 @@ public class InstallationProcessTest {
     @Test
     void whenAssignNewDevice_thenResetBootAndLocation() {
         process.assignDevice(deviceId);
-        process.receiveBootNotification(DEFAULT_BOOT);
+        process.receiveBootNotification(defaultBoot);
         process.confirmBoot();
         process.setLocation(someLocation);
 
@@ -214,11 +193,7 @@ public class InstallationProcessTest {
 
     @Test
     void whenFinishingWithAllCompletedTerms_thenMarkAsFinished() {
-        process.assignInstaller(installerId);
-        process.assignDevice(deviceId);
-        process.receiveBootNotification(DEFAULT_BOOT);
-        process.confirmBoot();
-        process.setLocation(someLocation);
+        process = processInProgress();
 
         process.finish();
 
