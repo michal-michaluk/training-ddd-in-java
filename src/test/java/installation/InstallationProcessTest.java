@@ -69,9 +69,8 @@ public class InstallationProcessTest {
 
     @Test
     void ignoreBootNotification_ifProcessFinished() {
-        process.finish();
-
         process.assignDevice(deviceId);
+        process.finish();
 
         assertDoesNotThrow(() -> process.receiveBootNotification(DEFAULT_BOOT));
 

@@ -11,6 +11,10 @@ public class InstallationProcess {
 
     private String installerId;
     private String deviceId;
+
+    private BootNotification confirmedBootNotification;
+    private BootNotification pendingBootNotification;
+
     private boolean isFinished;
 
     public InstallationProcess(WorkOrder workOrder) {
@@ -32,6 +36,16 @@ public class InstallationProcess {
         }
     }
 
+    public void receiveBootNotification(BootNotification notification) {
+        if (isFinished || !notification.deviceId().equals(deviceId)) {
+            return;
+        }
+
+        if (!notification.equals(confirmedBootNotification)) {
+            pendingBootNotification = notification;
+        }
+    }
+
     public void finish() {
         validateNotFinished();
         isFinished = true;
@@ -45,4 +59,6 @@ public class InstallationProcess {
 
     public String getOrderId() { return orderId; }
     public boolean isFinished() { return isFinished; }
+    public BootNotification getPendingBootNotification() { return pendingBootNotification; }
+    public BootNotification getConfirmedBootNotification() { return confirmedBootNotification; }
 }
