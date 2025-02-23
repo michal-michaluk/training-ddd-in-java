@@ -16,6 +16,7 @@ public class InstallationProcessTest {
     private static final String installerId = "INSTALLER-456";
 
     private WorkOrder workOrder;
+    private InstallationProcess process;
 
     @BeforeEach
     void setUp() {
@@ -28,12 +29,12 @@ public class InstallationProcessTest {
                 .orderId(orderId)
                 .ownership(ownership)
                 .build();
+
+        process = new InstallationProcess(workOrder);
     }
 
     @Test
     void shouldCreateInstallationProcess() {
-        InstallationProcess process = new InstallationProcess(workOrder);
-
         assertNotNull(process);
         assertEquals(orderId, process.getOrderId());
         assertFalse(process.isFinished());
@@ -41,7 +42,6 @@ public class InstallationProcessTest {
 
     @Test
     void whenAssignInstallerAfterFinish_thenThrowException() {
-        InstallationProcess process = new InstallationProcess(workOrder);
         process.finish();
 
         assertThrows(IllegalStateException.class, () ->
@@ -50,8 +50,7 @@ public class InstallationProcessTest {
     }
 
     @Test
-    void whenAssignInstallerAfterFinish_thenThrowException() {
-        InstallationProcess process = new InstallationProcess(workOrder);
+    void whenAssignDeviceAfterFinish_thenThrowException() {
         process.finish();
 
         assertThrows(IllegalStateException.class, () ->
