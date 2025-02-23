@@ -2,9 +2,11 @@ package devices.configuration.installation;
 
 import devices.configuration.device.Location;
 import devices.configuration.device.Ownership;
+import lombok.Getter;
 
 import java.util.Objects;
 
+@Getter
 public class InstallationProcess {
 
     private final String orderId;
@@ -43,7 +45,8 @@ public class InstallationProcess {
     public void receiveBootNotification(BootNotification notification) {
         if (isFinished) {
             return;
-        } else if (!notification.deviceId().equals(deviceId)) {
+        }
+        if (!notification.deviceId().equals(deviceId)) {
             throw new IllegalStateException("Device id not matching!");
         }
 
@@ -96,29 +99,5 @@ public class InstallationProcess {
         confirmedBootNotification = null;
         pendingBootNotification = null;
         location = null;
-    }
-
-    public String getOrderId() {
-        return orderId;
-    }
-
-    public boolean isFinished() {
-        return isFinished;
-    }
-
-    public BootNotification getPendingBootNotification() {
-        return pendingBootNotification;
-    }
-
-    public BootNotification getConfirmedBootNotification() {
-        return confirmedBootNotification;
-    }
-
-    public String getDeviceId() {
-        return deviceId;
-    }
-
-    public Location getLocation() {
-        return location;
     }
 }
