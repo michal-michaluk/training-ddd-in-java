@@ -13,6 +13,7 @@ public class InstallationProcessTest {
 
     private static final String orderId = "K56F";
     private static final String deviceId = "ALF-83266831";
+    private static final String installerId = "INSTALLER-456";
 
     private WorkOrder workOrder;
 
@@ -24,7 +25,7 @@ public class InstallationProcessTest {
                 .build();
 
         workOrder = WorkOrder.builder()
-                .orderId(ORDER_ID)
+                .orderId(orderId)
                 .ownership(ownership)
                 .build();
     }
@@ -38,72 +39,23 @@ public class InstallationProcessTest {
         assertFalse(process.isFinished());
     }
 
-    /*@Test
-    void createSecondInstallationProcessTest() {
-        IllegalStateException exception = assertThrows(IllegalStateException.class,
-                () -> new InstallationProcess(orderId));
+    @Test
+    void whenAssignInstallerAfterFinish_thenThrowException() {
+        InstallationProcess process = new InstallationProcess(workOrder);
+        process.finish();
 
-        assertEquals("Work order already exists!", exception.getMessage());
+        assertThrows(IllegalStateException.class, () ->
+                process.assignInstaller(installerId)
+        );
     }
 
     @Test
-    void processFinishedAndAssignedNewDevice() {
-        process.finishProcess();
+    void whenAssignInstallerAfterFinish_thenThrowException() {
+        InstallationProcess process = new InstallationProcess(workOrder);
+        process.finish();
 
-        IllegalStateException exception = assertThrows(IllegalStateException.class,
-                () -> process.assignDevice("device-x"));
-
-        assertEquals("Device cannot be assigned. Process Finished!", exception.getMessage());
+        assertThrows(IllegalStateException.class, () ->
+                process.assignDevice(deviceId)
+        );
     }
-
-    @Test
-    void processFinishedAndAssignedInstaller() {
-        process.finishProcess();
-
-        IllegalStateException exception = assertThrows(IllegalStateException.class,
-                () -> process.assignInstaller("installer-007"));
-
-        assertEquals("Installer cannot be assigned. Process Finished!", exception.getMessage());
-    }
-
-    @Test
-    void bootNotificationNotMatchingTest() {
-        process.assignDevice("correct-device");
-
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> process.receiveBootNotification(new BootNotification("wrong-device")));
-
-        assertEquals("Boot Notification device does not match assigned device!", exception.getMessage());
-    }
-
-    @Test
-    void shouldIgnoreExtraBootNotificationsAfterCompletion() {
-        process.assignDevice("cool-device");
-        process.receiveBootNotification(new BootNotification("cool-device"));
-        process.finishProcess();
-
-        assertDoesNotThrow(() -> process.receiveBootNotification(new BootNotification("cool-device")));
-    }
-
-    @Test
-    void bootNotificationUpdated() {
-        process.assignDevice("cool-device");
-        process.receiveBootNotification(new BootNotification("cool-device"));
-        process.confirmBootNotification();
-
-        process.updateBootNotification(new BootNotification("cool-device"));
-
-        assertFalse(process.isBootConfirmed());
-    }
-
-    @Test
-    void shouldAllowNewDeviceAssignmentButRequireBootNotificationAgain() {
-        process.assignDevice("cool-device");
-        process.receiveBootNotification(new BootNotification("cool-device"));
-        process.confirmBootNotification();
-
-        process.assignDevice("device-456");
-
-        assertFalse(process.isBootConfirmed());
-    }*/
 }
