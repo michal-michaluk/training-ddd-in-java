@@ -33,6 +33,7 @@ public class InstallationProcess {
         validateNotFinished();
         if (!Objects.equals(this.deviceId, deviceId)) {
             this.deviceId = deviceId;
+            resetBootNotification();
         }
     }
 
@@ -68,8 +69,28 @@ public class InstallationProcess {
         }
     }
 
-    public String getOrderId() { return orderId; }
-    public boolean isFinished() { return isFinished; }
-    public BootNotification getPendingBootNotification() { return pendingBootNotification; }
-    public BootNotification getConfirmedBootNotification() { return confirmedBootNotification; }
+    private void resetBootNotification() {
+        confirmedBootNotification = null;
+        pendingBootNotification = null;
+    }
+
+    public String getOrderId() {
+        return orderId;
+    }
+
+    public boolean isFinished() {
+        return isFinished;
+    }
+
+    public BootNotification getPendingBootNotification() {
+        return pendingBootNotification;
+    }
+
+    public BootNotification getConfirmedBootNotification() {
+        return confirmedBootNotification;
+    }
+
+    public String getDeviceId() {
+        return deviceId;
+    }
 }

@@ -160,7 +160,7 @@ public class InstallationProcessTest {
         String newDeviceId = "new-device";
         process.assignDevice(newDeviceId);
 
-        assertTrue(newDeviceId, process.getDeviceid());
+        assertEquals(newDeviceId, process.getDeviceId());
 
         assertNull(process.getPendingBootNotification());
         assertNull(process.getConfirmedBootNotification());
