@@ -87,4 +87,40 @@ public class InstallationProcessTest {
         assertNotNull(process.getPendingBootNotification());
         assertEquals(DEFAULT_BOOT, process.getPendingBootNotification());
     }
+
+    @Test
+    void whenDeviceNotMatchBootNotification_thenThrowException() {
+        // no device assigned
+        assertThrows(IllegalStateException.class, () ->
+                process.receiveBootNotification(DEFAULT_BOOT)
+        );
+
+        // assign not matching device
+        process.assignDevice("wrong-device");
+
+        assertThrows(IllegalStateException.class, () ->
+                process.receiveBootNotification(DEFAULT_BOOT)
+        );
+    }
+
+    @Test
+    void whenConfirmBootWithoutReceiving_thenThrowException() {
+        process.assignDevice(deviceId);
+
+        assertThrows(IllegalStateException.class, () ->
+                process.confirmBoot()
+        );
+    }
+
+    @Test
+    void whenConfirmBoot_thenUpdateConfirmedAndClearPending() {
+        process.assignDevice(deviceId);
+        process.receiveBootNotification(DEFAULT_BOOT);
+        process.confirmBoot();
+
+        assertNull(process.getPendingBootNotification());
+        assertEquals(DEFAULT_BOOT, process.getConfirmedBootNotification());
+    }
+
 }
+
