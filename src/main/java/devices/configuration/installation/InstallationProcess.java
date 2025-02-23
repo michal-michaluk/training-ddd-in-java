@@ -73,12 +73,22 @@ public class InstallationProcess {
 
     public void finish() {
         validateNotFinished();
+        validateCompletedInstallation();
         isFinished = true;
     }
 
     private void validateNotFinished() {
         if (isFinished) {
             throw new IllegalStateException("Process is already finished");
+        }
+    }
+
+    private void validateCompletedInstallation() {
+        if (installerId == null
+                || deviceId == null
+                || confirmedBootNotification == null
+                || location == null) {
+            throw new IllegalStateException("Missing required completion parameters");
         }
     }
 
