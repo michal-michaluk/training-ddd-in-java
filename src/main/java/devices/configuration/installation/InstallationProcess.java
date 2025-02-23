@@ -37,13 +37,24 @@ public class InstallationProcess {
     }
 
     public void receiveBootNotification(BootNotification notification) {
-        if (isFinished || !notification.deviceId().equals(deviceId)) {
+        if (isFinished) {
             return;
+        } else if (!notification.deviceId().equals(deviceId)) {
+            throw new IllegalStateException("Device id not matching!");
         }
 
         if (!notification.equals(confirmedBootNotification)) {
             pendingBootNotification = notification;
         }
+    }
+
+    public void confirmBoot() {
+        validateNotFinished();
+        if (pendingBootNotification == null) {
+            throw new IllegalStateException("No pending BootNotification to confirm");
+        }
+        confirmedBootNotification = pendingBootNotification;
+        pendingBootNotification = null;
     }
 
     public void finish() {
