@@ -122,5 +122,48 @@ public class InstallationProcessTest {
         assertEquals(DEFAULT_BOOT, process.getConfirmedBootNotification());
     }
 
+    @Test
+    void whenUpdatingAnyBootNotificationField_thenRequireNewConfirmation() {
+        process.assignDevice(deviceId);
+        process.receiveBootNotification(DEFAULT_BOOT);
+        process.confirmBoot();
+
+        BootNotification updatedBoot = DEFAULT_BOOT.toBuilder()
+                .firmware("v2.1")
+                .build();
+        process.receiveBootNotification(updatedBoot);
+
+        assertNotNull(process.getPendingBootNotification());
+        assertEquals(updatedBoot, process.getPendingBootNotification());
+        assertNotEquals(DEFAULT_BOOT, process.getPendingBootNotification());
+    }
+
+    @Test
+    void whenResendingSameBootNotificationData_thenNoPending() {
+        process.assignDevice(deviceId);
+        process.receiveBootNotification(DEFAULT_BOOT);
+        process.confirmBoot();
+
+        BootNotification sameBoot = DEFAULT_BOOT.toBuilder().build();
+        process.receiveBootNotification(sameBoot);
+
+        assertNull(process.getPendingBootNotification());
+        assertEquals(DEFAULT_BOOT, process.getConfirmedBootNotification());
+    }
+
+    @Test
+    void whenAssigningNewDeviceAfterBoot_thenRequireNewNotification() {
+        process.assignDevice(deviceId);
+        process.receiveBootNotification(DEFAULT_BOOT);
+        process.confirmBoot();
+
+        String newDeviceId = "new-device";
+        process.assignDevice(newDeviceId);
+
+        assertTrue(newDeviceId, process.getDeviceid());
+
+        assertNull(process.getPendingBootNotification());
+        assertNull(process.getConfirmedBootNotification());
+    }
 }
 
