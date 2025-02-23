@@ -203,5 +203,26 @@ public class InstallationProcessTest {
         assertNull(process.getLocation());
         assertEquals(newDeviceId, process.getDeviceId());
     }
+
+    @Test
+    void whenFinishingWithoutCompleteTerms_thenThrowException() {
+        // missing installer, device, boot confirmation, location
+        assertThrows(IllegalStateException.class, () ->
+                process.finish()
+        );
+    }
+
+    @Test
+    void whenFinishingWithAllCompletedTerms_thenMarkAsFinished() {
+        process.assignInstaller(installerId);
+        process.assignDevice(deviceId);
+        process.receiveBootNotification(DEFAULT_BOOT);
+        process.confirmBoot();
+        process.setLocation(someLocation);
+
+        process.finish();
+
+        assertTrue(process.isFinished());
+    }
 }
 
