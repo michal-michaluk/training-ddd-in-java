@@ -15,6 +15,7 @@ public class InstallationProcessTest {
     private static final String orderId = "K56F";
     private static final String deviceId = "ALF-83266831";
     private static final String installerId = "INSTALLER-456";
+
     private static final BootNotification DEFAULT_BOOT = BootNotification.builder()
             .deviceId(deviceId)
             .protocol(BootNotification.Protocols.IoT20)
@@ -23,6 +24,15 @@ public class InstallationProcessTest {
             .serial("123-ABC")
             .firmware("v2.0")
             .build();
+
+    private static final Location someLocation = Location.builder()
+            .street("Rakietowa")
+            .houseNumber("1A")
+            .city("Wrocław")
+            .postalCode("54-621")
+            .country("POL")
+            .coordinates(new Coordinates(16.931752852309156, 51.09836221719513))
+            .build;
 
     private WorkOrder workOrder;
     private InstallationProcess process;
@@ -164,6 +174,31 @@ public class InstallationProcessTest {
 
         assertNull(process.getPendingBootNotification());
         assertNull(process.getConfirmedBootNotification());
+    }
+
+    @Test
+    void whenSettingLocationWithoutConfirmedBoot_thenThrowException() {
+        process.assignDevice(deviceId);
+
+        assertThrows(IllegalStateException.class, () ->
+                process.setLocation(someLocation)
+        );
+    }
+
+    @Test
+    void whenAssignNewDevice_thenResetBootAndLocation() {
+        process.assignDevice(deviceId);
+        process.receiveBootNotification(DEFAULT_BOOT);
+        process.confirmBoot();
+        process.setLocation(someLocation);
+
+        String newDeviceId = "new-device";
+        process.assignDevice(newDeviceId);
+
+        assertNull(process.getConfirmedBootNotification());
+        assertNull(process.getPendingBootNotification());
+        assertNull(process.getLocation());
+        assertEquals(newDeviceId, process.getDeviceId());
     }
 }
 
