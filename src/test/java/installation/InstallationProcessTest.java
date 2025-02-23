@@ -1,6 +1,7 @@
 package installation;
 
 import devices.configuration.device.Ownership;
+import devices.configuration.installation.BootNotification;
 import devices.configuration.installation.InstallationProcess;
 import devices.configuration.installation.WorkOrder;
 
@@ -14,6 +15,14 @@ public class InstallationProcessTest {
     private static final String orderId = "K56F";
     private static final String deviceId = "ALF-83266831";
     private static final String installerId = "INSTALLER-456";
+    private static final BootNotification DEFAULT_BOOT = BootNotification.builder()
+            .deviceId(deviceId)
+            .protocol(BootNotification.Protocols.IoT20)
+            .vendor("EVSE")
+            .model("UltraCharge")
+            .serial("123-ABC")
+            .firmware("v2.0")
+            .build();
 
     private WorkOrder workOrder;
     private InstallationProcess process;
@@ -56,5 +65,27 @@ public class InstallationProcessTest {
         assertThrows(IllegalStateException.class, () ->
                 process.assignDevice(deviceId)
         );
+    }
+
+    @Test
+    void ignoreBootNotification_ifProcessFinished() {
+        process.finish();
+
+        process.assignDevice(deviceId);
+
+        assertDoesNotThrow(() -> process.receiveBootNotification(DEFAULT_BOOT));
+
+        assertNull(process.getPendingBootNotification());
+        assertNull(process.getConfirmedBootNotification());
+    }
+
+    @Test
+    void whenReceivingNewBootNotification_thenStoreAsPending() {
+        process.assignDevice(deviceId);
+
+        process.receiveBootNotification(DEFAULT_BOOT);
+
+        assertNotNull(process.getPendingBootNotification());
+        assertEquals(DEFAULT_BOOT, process.getPendingBootNotification());
     }
 }
