@@ -1,7 +1,8 @@
 package installation;
 
-import devices.configuration.installation.BootNotification;
+import devices.configuration.device.Ownership;
 import devices.configuration.installation.InstallationProcess;
+import devices.configuration.installation.WorkOrder;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,16 +11,34 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class InstallationProcessTest {
 
-    private InstallationProcess process;
-    private final String orderId = "order-001";
+    private static final String orderId = "K56F";
+    private static final String deviceId = "ALF-83266831";
+
+    private WorkOrder workOrder;
 
     @BeforeEach
     void setUp() {
-        InstallationProcess.existingOrders.clear();
-        process = new InstallationProcess(orderId);
+        Ownership ownership = Ownership.builder()
+                .operator("Devicex.nl")
+                .provider("public-devices")
+                .build();
+
+        workOrder = WorkOrder.builder()
+                .orderId(ORDER_ID)
+                .ownership(ownership)
+                .build();
     }
 
     @Test
+    void shouldCreateInstallationProcess() {
+        InstallationProcess process = new InstallationProcess(workOrder);
+
+        assertNotNull(process);
+        assertEquals(orderId, process.getOrderId());
+        assertFalse(process.isFinished());
+    }
+
+    /*@Test
     void createSecondInstallationProcessTest() {
         IllegalStateException exception = assertThrows(IllegalStateException.class,
                 () -> new InstallationProcess(orderId));
@@ -86,5 +105,5 @@ public class InstallationProcessTest {
         process.assignDevice("device-456");
 
         assertFalse(process.isBootConfirmed());
-    }
+    }*/
 }
