@@ -1,5 +1,6 @@
 package devices.configuration.installation;
 
+import devices.configuration.device.Location;
 import devices.configuration.device.Ownership;
 
 import java.util.Objects;
@@ -14,6 +15,8 @@ public class InstallationProcess {
 
     private BootNotification confirmedBootNotification;
     private BootNotification pendingBootNotification;
+
+    private Location location;
 
     private boolean isFinished;
 
@@ -33,7 +36,7 @@ public class InstallationProcess {
         validateNotFinished();
         if (!Objects.equals(this.deviceId, deviceId)) {
             this.deviceId = deviceId;
-            resetBootNotification();
+            resetBootState();
         }
     }
 
@@ -58,6 +61,16 @@ public class InstallationProcess {
         pendingBootNotification = null;
     }
 
+    public void setLocation(Location someLocation) {
+        validateNotFinished();
+        if (confirmedBootNotification == null) {
+            throw new IllegalStateException("Notification Boot is not confirmed!");
+        }
+        if (!Objects.equals(location, someLocation)) {
+            location = someLocation;
+        }
+    }
+
     public void finish() {
         validateNotFinished();
         isFinished = true;
@@ -69,9 +82,10 @@ public class InstallationProcess {
         }
     }
 
-    private void resetBootNotification() {
+    private void resetBootState() {
         confirmedBootNotification = null;
         pendingBootNotification = null;
+        location = null;
     }
 
     public String getOrderId() {
@@ -92,5 +106,9 @@ public class InstallationProcess {
 
     public String getDeviceId() {
         return deviceId;
+    }
+
+    public Location getLocation() {
+        return location;
     }
 }

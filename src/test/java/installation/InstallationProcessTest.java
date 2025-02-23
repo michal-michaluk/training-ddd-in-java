@@ -1,5 +1,6 @@
 package installation;
 
+import devices.configuration.device.Location;
 import devices.configuration.device.Ownership;
 import devices.configuration.installation.BootNotification;
 import devices.configuration.installation.InstallationProcess;
@@ -7,6 +8,8 @@ import devices.configuration.installation.WorkOrder;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -31,8 +34,8 @@ public class InstallationProcessTest {
             .city("Wrocław")
             .postalCode("54-621")
             .country("POL")
-            .coordinates(new Coordinates(16.931752852309156, 51.09836221719513))
-            .build;
+            .coordinates(new Location.Coordinates(new BigDecimal("16.931752852309156"), new BigDecimal("51.09836221719513")))
+            .build();
 
     private WorkOrder workOrder;
     private InstallationProcess process;
