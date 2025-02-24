@@ -7,14 +7,18 @@ import devices.configuration.installation.InstallationProcess;
 import devices.configuration.installation.WorkOrder;
 
 import java.math.BigDecimal;
+import java.util.function.Consumer;
 
 public class InstallationProcessFixture {
 
-    private static final String orderId = "K56F";
-    private static final String deviceId = "ALF-83266831";
-    private static final String installerId = "INSTALLER-456";
+    static InstallationProcess given(WorkOrder orderId, Consumer<InstallationProcess> customize) {
+        var process = new InstallationProcess(orderId);
+        customize.accept(process);
+        return process;
+    }
 
-    public static BootNotification defaultNotification() {
+
+    public static BootNotification ultraChargeBootNotification(String deviceId) {
         return BootNotification.builder()
                 .deviceId(deviceId)
                 .protocol(BootNotification.Protocols.IoT20)
@@ -32,7 +36,10 @@ public class InstallationProcessFixture {
                 .city("Wrocław")
                 .postalCode("54-621")
                 .country("POL")
-                .coordinates(new Location.Coordinates(new BigDecimal("16.931752852309156"), new BigDecimal("51.09836221719513")))
+                .coordinates(
+                        new Location.Coordinates(
+                                new BigDecimal("16.931752852309156"),
+                                new BigDecimal("51.09836221719513")))
                 .build();
     }
 
@@ -41,23 +48,5 @@ public class InstallationProcessFixture {
                 .operator("Devicex.nl")
                 .provider("public-devices")
                 .build();
-    }
-
-    public static WorkOrder defaultOrder() {
-        return WorkOrder.builder()
-                .orderId(orderId)
-                .ownership(someOwnership())
-                .build();
-    }
-
-    public static InstallationProcess processInProgress() {
-        InstallationProcess process = new InstallationProcess(defaultOrder());
-        process.assignDevice(deviceId);
-        process.assignInstaller(installerId);
-        process.receiveBootNotification(defaultNotification());
-        process.confirmBoot();
-        process.setLocation(someLocation());
-
-        return process;
     }
 }
