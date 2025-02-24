@@ -14,6 +14,7 @@ public class InstallationProcessFixture {
     static InstallationProcess given(WorkOrder workOrder, Consumer<InstallationProcess> customize) {
         var process = InstallationProcess.create(workOrder);
         customize.accept(process);
+        process.getEvents().clear();
         return process;
     }
 
