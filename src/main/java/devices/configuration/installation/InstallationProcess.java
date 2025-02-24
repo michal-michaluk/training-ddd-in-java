@@ -2,29 +2,35 @@ package devices.configuration.installation;
 
 import devices.configuration.device.Location;
 import devices.configuration.device.Ownership;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.Objects;
 
 @Getter
+@AllArgsConstructor
 public class InstallationProcess {
 
     private final String orderId;
     private final Ownership ownership;
-
     private String installerId;
     private String deviceId;
-
     private BootNotification confirmedBootNotification;
     private BootNotification pendingBootNotification;
-
     private Location location;
-
     private boolean isFinished;
 
-    public InstallationProcess(WorkOrder workOrder) {
-        this.orderId = workOrder.orderId();
-        this.ownership = workOrder.ownership();
+    public static InstallationProcess create(WorkOrder workOrder) {
+        return new InstallationProcess(
+                workOrder.orderId(),
+                workOrder.ownership(),
+                null,
+                null,
+                null,
+                null,
+                null,
+                false
+        );
     }
 
     public void assignInstaller(String installerId) {
