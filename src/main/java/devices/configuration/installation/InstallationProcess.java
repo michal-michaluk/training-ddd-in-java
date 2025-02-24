@@ -113,13 +113,16 @@ public class InstallationProcess {
     }
 
     private void resetBootState() {
-        confirmedBootNotification = null;
-        pendingBootNotification = null;
-        location = null;
-
-        events.add(new BootNotificationReceived(workOrder(), null));
-        events.add(new BootNotificationConfirmed(workOrder(), null));
-        events.add(new LocationChanged(workOrder(), null));
+        if (confirmedBootNotification != null || pendingBootNotification != null) {
+            events.add(new BootNotificationReceived(workOrder(), null));
+            events.add(new BootNotificationConfirmed(workOrder(), null));
+            confirmedBootNotification = null;
+            pendingBootNotification = null;
+        }
+        if (location != null) {
+            events.add(new LocationChanged(workOrder(), null));
+            location = null;
+        }
     }
 
     public WorkOrder workOrder() {

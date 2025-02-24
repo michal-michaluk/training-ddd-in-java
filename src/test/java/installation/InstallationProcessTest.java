@@ -238,8 +238,7 @@ public class InstallationProcessTest {
                         new ProcessCreated(workOrder),
                         new DeviceAssigned(workOrder, deviceId),
                         new BootNotificationReceived(workOrder, someBootNotification),
-                        new BootNotificationConfirmed(workOrder, someBootNotification),
-                        new LocationChanged(workOrder, null));
+                        new BootNotificationConfirmed(workOrder, someBootNotification));
     }
 
     @Test
