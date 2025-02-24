@@ -11,8 +11,8 @@ import java.util.function.Consumer;
 
 public class InstallationProcessFixture {
 
-    static InstallationProcess given(WorkOrder orderId, Consumer<InstallationProcess> customize) {
-        var process = new InstallationProcess(orderId);
+    static InstallationProcess given(WorkOrder workOrder, Consumer<InstallationProcess> customize) {
+        var process = InstallationProcess.create(workOrder);
         customize.accept(process);
         return process;
     }

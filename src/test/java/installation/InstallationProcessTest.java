@@ -1,6 +1,5 @@
 package installation;
 
-import devices.configuration.device.Location;
 import devices.configuration.installation.BootNotification;
 import devices.configuration.installation.InstallationProcess;
 import devices.configuration.installation.WorkOrder;
@@ -16,23 +15,23 @@ public class InstallationProcessTest {
     private final String deviceId = "ALF-83266831";
     private final String installerId = "INSTALLER-456";
 
-    private BootNotification defaultBoot;
-    private Location someLocation;
+    private BootNotification someBootNotification;
     private WorkOrder workOrder;
-    private InstallationProcess process;
 
     @BeforeEach
     void setUp() {
-        defaultBoot = defaultNotification();
-        someLocation = someLocation();
-        workOrder = defaultOrder();
-
-        process = new InstallationProcess(workOrder);
+        someBootNotification = ultraChargeBootNotification(deviceId);
+        workOrder = WorkOrder.builder()
+                .orderId(orderId)
+                .ownership(someOwnership())
+                .build();
     }
 
     @Test
     void shouldCreateInstallationProcess() {
-        // given - already defined process
+        // given - a new process created
+        var process = InstallationProcess.create(workOrder);
+
         // then - verify that process is created with correct order id
         assertNotNull(process);
         assertEquals(orderId, process.getOrderId());
@@ -41,8 +40,14 @@ public class InstallationProcessTest {
 
     @Test
     void whenAssignInstallerAfterFinish_thenThrowException() {
-        // given - a complete process
-        process = processInProgress();
+        // given - a completed process
+        var process = given(workOrder, p -> {
+            p.assignDevice(deviceId);
+            p.assignInstaller(installerId);
+            p.receiveBootNotification(someBootNotification);
+            p.confirmBoot();
+            p.setLocation(someLocation());
+        });
 
         // when - process finishes
         process.finish();
@@ -53,8 +58,14 @@ public class InstallationProcessTest {
 
     @Test
     void whenAssignDeviceAfterFinish_thenThrowException() {
-        // given - a complete process
-        process = processInProgress();
+        // given - a completed process
+        var process = given(workOrder, p -> {
+            p.assignDevice(deviceId);
+            p.assignInstaller(installerId);
+            p.receiveBootNotification(someBootNotification);
+            p.confirmBoot();
+            p.setLocation(someLocation());
+        });
 
         // when - process finishes
         process.finish();
@@ -65,49 +76,69 @@ public class InstallationProcessTest {
 
     @Test
     void ignoreBootNotification_ifProcessFinished() {
-        // given - a complete process
-        process = processInProgress();
+        // given - a completed process
+        var process = given(workOrder, p -> {
+            p.assignDevice(deviceId);
+            p.assignInstaller(installerId);
+            p.receiveBootNotification(someBootNotification);
+            p.confirmBoot();
+            p.setLocation(someLocation());
+        });
 
         // when - process finishes
         process.finish();
 
         // process should ignore new notification after finishing
-        BootNotification newBoot = defaultBoot.toBuilder().firmware("v2.1").build();
+        BootNotification newBoot = someBootNotification.toBuilder().firmware("v2.1").build();
         process.receiveBootNotification(newBoot);
 
         // then - verify no pending notification is stored
         assertNull(process.getPendingBootNotification());
-        assertEquals(defaultBoot, process.getConfirmedBootNotification());
+        assertEquals(someBootNotification, process.getConfirmedBootNotification());
     }
 
     @Test
     void whenReceivingNewBootNotification_thenStoreAsPending() {
-        // given
+        // given - a new process
+        var process = InstallationProcess.create(workOrder);
+
         // when - receiving notification should be stored as pending before confirming
         process.assignDevice(deviceId);
-        process.receiveBootNotification(defaultBoot);
+        process.receiveBootNotification(someBootNotification);
 
         // then verify pending notification was stored
         assertNotNull(process.getPendingBootNotification());
-        assertEquals(defaultBoot, process.getPendingBootNotification());
+        assertEquals(someBootNotification, process.getPendingBootNotification());
+    }
+
+    @Test
+    void whenNoDeviceAssignedAndReceivingNotification_thenThrowException() {
+        // given - a new process
+        var process = InstallationProcess.create(workOrder);
+
+        // when no device assigned
+        // then exception should be thrown if we send notification
+        assertThrows(IllegalStateException.class, () -> process.receiveBootNotification(someBootNotification));
     }
 
     @Test
     void whenDeviceNotMatchBootNotification_thenThrowException() {
-        // when no device assigned
-        // then exception should be thrown if we send notification
-        assertThrows(IllegalStateException.class, () -> process.receiveBootNotification(defaultBoot));
+        // given - a new process
+        var process = InstallationProcess.create(workOrder);
 
         // when devices not matching
         // then exception should be thrown if we send notification
         process.assignDevice("wrong-device");
 
-        assertThrows(IllegalStateException.class, () -> process.receiveBootNotification(defaultBoot));
+        assertThrows(IllegalStateException.class, () -> process.receiveBootNotification(someBootNotification));
     }
 
     @Test
     void whenConfirmBootWithoutReceiving_thenThrowException() {
         // given
+        var process = InstallationProcess.create(workOrder);
+
+        // when assigning a device
         process.assignDevice(deviceId);
 
         // then exception should be thrown - cannot confirm boot without receiving notification first
@@ -116,57 +147,66 @@ public class InstallationProcessTest {
 
     @Test
     void whenConfirmBoot_thenUpdateConfirmedAndClearPending() {
-        // given
+        // given a fresh process
+        var process = InstallationProcess.create(workOrder);
+
+        // when confirming correctly boot notification
         process.assignDevice(deviceId);
-        process.receiveBootNotification(defaultBoot);
+        process.receiveBootNotification(someBootNotification);
         process.confirmBoot();
 
         // then verify that after confirming, pending is set to null and confirmed is set correctly
         assertNull(process.getPendingBootNotification());
-        assertEquals(defaultBoot, process.getConfirmedBootNotification());
+        assertEquals(someBootNotification, process.getConfirmedBootNotification());
     }
 
     @Test
     void whenUpdatingAnyBootNotificationField_thenRequireNewConfirmation() {
-        // given
-        process.assignDevice(deviceId);
-        process.receiveBootNotification(defaultBoot);
-        process.confirmBoot();
+        // given - process with assigned and confirmed boot
+        var process = given(workOrder, p -> {
+            p.assignDevice(deviceId);
+            p.receiveBootNotification(someBootNotification);
+            p.confirmBoot();
+        });
 
         // when receiving updated boot notification
-        BootNotification updatedBoot = defaultBoot.toBuilder().firmware("v2.1").build();
+        BootNotification updatedBoot = someBootNotification.toBuilder().firmware("v2.1").build();
         process.receiveBootNotification(updatedBoot);
 
         // verify that the new notification is stored as pending
         // requires confirming again to store the new notification as confirmed
         assertNotNull(process.getPendingBootNotification());
         assertEquals(updatedBoot, process.getPendingBootNotification());
-        assertNotEquals(defaultBoot, process.getPendingBootNotification());
-        assertEquals(defaultBoot, process.getConfirmedBootNotification());
+        assertNotEquals(someBootNotification, process.getPendingBootNotification());
+        assertEquals(someBootNotification, process.getConfirmedBootNotification());
     }
 
     @Test
     void whenResendingSameBootNotificationData_thenNoPending() {
-        // given
-        process.assignDevice(deviceId);
-        process.receiveBootNotification(defaultBoot);
-        process.confirmBoot();
+        // given - process with assigned and confirmed boot
+        var process = given(workOrder, p -> {
+            p.assignDevice(deviceId);
+            p.receiveBootNotification(someBootNotification);
+            p.confirmBoot();
+        });
 
         // when resending the same boot notification
-        BootNotification sameBoot = defaultBoot.toBuilder().build();
+        BootNotification sameBoot = someBootNotification.toBuilder().build();
         process.receiveBootNotification(sameBoot);
 
         // then verify that it will be ignored
         assertNull(process.getPendingBootNotification());
-        assertEquals(defaultBoot, process.getConfirmedBootNotification());
+        assertEquals(someBootNotification, process.getConfirmedBootNotification());
     }
 
     @Test
     void whenAssigningNewDeviceAfterBoot_thenRequireNewNotification() {
-        // given
-        process.assignDevice(deviceId);
-        process.receiveBootNotification(defaultBoot);
-        process.confirmBoot();
+        // given - process with assigned and confirmed boot
+        var process = given(workOrder, p -> {
+            p.assignDevice(deviceId);
+            p.receiveBootNotification(someBootNotification);
+            p.confirmBoot();
+        });
 
         // when reassigning new device after confirming
         String newDeviceId = "new-device";
@@ -182,24 +222,26 @@ public class InstallationProcessTest {
 
     @Test
     void whenSettingLocationWithoutConfirmedBoot_thenThrowException() {
-        // given
-        process.assignDevice(deviceId);
+        // given - process with assigned device
+        var process = given(workOrder, p -> p.assignDevice(deviceId));
 
         // when receiving boot notification
-        process.receiveBootNotification(defaultBoot);
+        process.receiveBootNotification(someBootNotification);
 
         // then setting location if boot notification is not confirmed
         // should throw exception
-        assertThrows(IllegalStateException.class, () -> process.setLocation(someLocation));
+        assertThrows(IllegalStateException.class, () -> process.setLocation(someLocation()));
     }
 
     @Test
     void whenAssignNewDevice_thenResetBootAndLocation() {
-        // given
-        process.assignDevice(deviceId);
-        process.receiveBootNotification(defaultBoot);
-        process.confirmBoot();
-        process.setLocation(someLocation);
+        // given - confirmed boot and set location
+        var process = given(workOrder, p -> {
+            p.assignDevice(deviceId);
+            p.receiveBootNotification(someBootNotification);
+            p.confirmBoot();
+            p.setLocation(someLocation());
+        });
 
         // when reassigning new device
         String newDeviceId = "new-device";
@@ -214,6 +256,9 @@ public class InstallationProcessTest {
 
     @Test
     void whenFinishingWithoutCompleteTerms_thenThrowException() {
+        // given - new process
+        var process = InstallationProcess.create(workOrder);
+
         // cannot finish process when missing:
         // installer, device, boot confirmation, location
         assertThrows(IllegalStateException.class, () -> process.finish());
@@ -222,7 +267,13 @@ public class InstallationProcessTest {
     @Test
     void whenFinishingWithAllCompletedTerms_thenMarkAsFinished() {
         // given a completed process
-        process = processInProgress();
+        var process = given(workOrder, p -> {
+            p.assignDevice(deviceId);
+            p.assignInstaller(installerId);
+            p.receiveBootNotification(someBootNotification);
+            p.confirmBoot();
+            p.setLocation(someLocation());
+        });
 
         // when it finishes
         process.finish();
