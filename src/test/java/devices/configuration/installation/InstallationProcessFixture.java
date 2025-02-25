@@ -2,9 +2,6 @@ package devices.configuration.installation;
 
 import devices.configuration.device.Location;
 import devices.configuration.device.Ownership;
-import devices.configuration.installation.BootNotification;
-import devices.configuration.installation.InstallationProcess;
-import devices.configuration.installation.WorkOrder;
 
 import java.math.BigDecimal;
 import java.util.function.Consumer;
