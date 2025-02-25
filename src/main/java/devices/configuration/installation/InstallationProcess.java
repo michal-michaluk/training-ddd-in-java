@@ -42,7 +42,7 @@ public class InstallationProcess {
         validateNotFinished();
         if (!Objects.equals(this.installerId, installerId)) {
             this.installerId = installerId;
-            events.add(new InstallerAssigned(workOrder(), installerId));
+            events.add(new InstallerAssigned(orderId, installerId));
         }
     }
 
@@ -51,7 +51,7 @@ public class InstallationProcess {
         if (!Objects.equals(this.deviceId, deviceId)) {
             this.deviceId = deviceId;
             resetBootState();
-            events.add(new DeviceAssigned(workOrder(), deviceId));
+            events.add(new DeviceAssigned(orderId, deviceId));
         }
     }
 
@@ -65,7 +65,7 @@ public class InstallationProcess {
         if (!Objects.equals(notification, confirmedBootNotification)
                 && !Objects.equals(notification, pendingBootNotification)) {
             pendingBootNotification = notification;
-            events.add(new BootNotificationReceived(workOrder(), notification));
+            events.add(new BootNotificationReceived(orderId, notification));
         }
     }
 
@@ -76,7 +76,7 @@ public class InstallationProcess {
         }
         confirmedBootNotification = pendingBootNotification;
         pendingBootNotification = null;
-        events.add(new BootNotificationConfirmed(workOrder(), confirmedBootNotification));
+        events.add(new BootNotificationConfirmed(orderId, confirmedBootNotification));
     }
 
     public void setLocation(Location someLocation) {
@@ -86,7 +86,7 @@ public class InstallationProcess {
         }
         if (!Objects.equals(location, someLocation)) {
             location = someLocation;
-            events.add(new LocationChanged(workOrder(), location));
+            events.add(new LocationChanged(orderId, location));
         }
     }
 
@@ -94,7 +94,7 @@ public class InstallationProcess {
         validateNotFinished();
         validateCompletedInstallation();
         isFinished = true;
-        events.add(new InstallationFinished(workOrder()));
+        events.add(new InstallationFinished(orderId));
     }
 
     private void validateNotFinished() {
@@ -114,21 +114,14 @@ public class InstallationProcess {
 
     private void resetBootState() {
         if (confirmedBootNotification != null || pendingBootNotification != null) {
-            events.add(new BootNotificationReceived(workOrder(), null));
-            events.add(new BootNotificationConfirmed(workOrder(), null));
+            events.add(new BootNotificationReceived(orderId, null));
+            events.add(new BootNotificationConfirmed(orderId, null));
             confirmedBootNotification = null;
             pendingBootNotification = null;
         }
         if (location != null) {
-            events.add(new LocationChanged(workOrder(), null));
+            events.add(new LocationChanged(orderId, null));
             location = null;
         }
-    }
-
-    public WorkOrder workOrder() {
-        return WorkOrder.builder()
-                .orderId(this.orderId)
-                .ownership(this.ownership)
-                .build();
     }
 }
