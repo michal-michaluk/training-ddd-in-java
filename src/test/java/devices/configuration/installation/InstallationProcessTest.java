@@ -1,13 +1,10 @@
-package installation;
+package devices.configuration.installation;
 
-import devices.configuration.installation.BootNotification;
 import devices.configuration.installation.DomainEvent.*;
-import devices.configuration.installation.InstallationProcess;
-import devices.configuration.installation.WorkOrder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static installation.InstallationProcessFixture.*;
+import static devices.configuration.installation.InstallationProcessFixture.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -35,11 +32,13 @@ public class InstallationProcessTest {
         var process = InstallationProcess.create(workOrder);
 
         // then - verify that process is created with correct order id
-        assertNotNull(process);
-        assertEquals(orderId, process.getOrderId());
-        assertFalse(process.isFinished());
+        var installationState  = process.getCurrentState();
 
-        assertThat(process.getEvents())
+        assertNotNull(installationState );
+        assertEquals(orderId, installationState .orderId());
+        assertFalse(installationState .isFinished());
+
+        assertThat(process.events)
                 .contains(new ProcessCreated(workOrder));
     }
 
@@ -52,9 +51,11 @@ public class InstallationProcessTest {
         process.assignDevice(deviceId);
 
         // then verify it was stored correctly
-        assertEquals(deviceId, process.getDeviceId());
+        var installationState  = process.getCurrentState();
+        
+        assertEquals(deviceId, installationState .deviceId());
 
-        assertThat(process.getEvents())
+        assertThat(process.events)
                 .contains(
                         new ProcessCreated(workOrder),
                         new DeviceAssigned(orderId, deviceId));
@@ -69,9 +70,11 @@ public class InstallationProcessTest {
         process.assignInstaller(installerId);
 
         // then verify it was stored correctly
-        assertEquals(installerId, process.getInstallerId());
+        var installationState  = process.getCurrentState();
 
-        assertThat(process.getEvents())
+        assertEquals(installerId, installationState .installerId());
+
+        assertThat(process.events)
                 .contains(
                         new ProcessCreated(workOrder),
                         new InstallerAssigned(orderId, installerId));
@@ -94,7 +97,7 @@ public class InstallationProcessTest {
         // then - any commands after finish of process should be not allowed
         assertThrows(IllegalStateException.class, () -> process.assignInstaller(installerId));
 
-        assertThat(process.getEvents())
+        assertThat(process.events)
                 .contains(new InstallationFinished(orderId));
     }
 
@@ -115,7 +118,7 @@ public class InstallationProcessTest {
         // then - any commands after finish of process should be not allowed
         assertThrows(IllegalStateException.class, () -> process.assignDevice(deviceId));
 
-        assertThat(process.getEvents())
+        assertThat(process.events)
                 .contains(new InstallationFinished(orderId));
     }
 
@@ -138,12 +141,14 @@ public class InstallationProcessTest {
         process.receiveBootNotification(newBoot);
 
         // then - verify no pending notification is stored
-        assertNull(process.getPendingBootNotification());
-        assertEquals(someBootNotification, process.getConfirmedBootNotification());
+        var installationState  = process.getCurrentState();
 
-        assertThat(process.getEvents())
+        assertNull(installationState .pendingBootNotification());
+        assertEquals(someBootNotification, installationState .confirmedBootNotification());
+
+        assertThat(process.events)
                 .contains(new InstallationFinished(orderId));
-        assertThat(process.getEvents())
+        assertThat(process.events)
                 .doesNotContain(
                         new BootNotificationReceived(orderId, newBoot),
                         new BootNotificationConfirmed(orderId, newBoot));
@@ -159,10 +164,12 @@ public class InstallationProcessTest {
         process.receiveBootNotification(someBootNotification);
 
         // then verify pending notification was stored
-        assertNotNull(process.getPendingBootNotification());
-        assertEquals(someBootNotification, process.getPendingBootNotification());
+        var installationState  = process.getCurrentState();
 
-        assertThat(process.getEvents())
+        assertNotNull(installationState .pendingBootNotification());
+        assertEquals(someBootNotification, installationState .pendingBootNotification());
+
+        assertThat(process.events)
                 .contains(
                         new ProcessCreated(workOrder),
                         new DeviceAssigned(orderId, deviceId),
@@ -178,9 +185,9 @@ public class InstallationProcessTest {
         // then exception should be thrown if we send notification
         assertThrows(IllegalStateException.class, () -> process.receiveBootNotification(someBootNotification));
 
-        assertThat(process.getEvents())
+        assertThat(process.events)
                 .contains(new ProcessCreated(workOrder));
-        assertThat(process.getEvents())
+        assertThat(process.events)
                 .doesNotContain(new BootNotificationReceived(orderId, someBootNotification));
     }
 
@@ -190,13 +197,13 @@ public class InstallationProcessTest {
         var process = InstallationProcess.create(workOrder);
 
         // when devices not matching
-        // then exception should be thrown if we send notification
         String newDeviceId = "wrong-device";
         process.assignDevice(newDeviceId);
 
+        // then exception should be thrown if we send notification
         assertThrows(IllegalStateException.class, () -> process.receiveBootNotification(someBootNotification));
 
-        assertThat(process.getEvents())
+        assertThat(process.events)
                 .contains(
                         new ProcessCreated(workOrder),
                         new DeviceAssigned(orderId, newDeviceId));
@@ -213,7 +220,7 @@ public class InstallationProcessTest {
         // then exception should be thrown - cannot confirm boot without receiving notification first
         assertThrows(IllegalStateException.class, process::confirmBoot);
 
-        assertThat(process.getEvents())
+        assertThat(process.events)
                 .contains(
                         new ProcessCreated(workOrder),
                         new DeviceAssigned(orderId, deviceId));
@@ -230,10 +237,12 @@ public class InstallationProcessTest {
         process.confirmBoot();
 
         // then verify that after confirming, pending is set to null and confirmed is set correctly
-        assertNull(process.getPendingBootNotification());
-        assertEquals(someBootNotification, process.getConfirmedBootNotification());
+        var installationState  = process.getCurrentState();
 
-        assertThat(process.getEvents())
+        assertNull(installationState .pendingBootNotification());
+        assertEquals(someBootNotification, installationState .confirmedBootNotification());
+
+        assertThat(process.events)
                 .contains(
                         new ProcessCreated(workOrder),
                         new DeviceAssigned(orderId, deviceId),
@@ -256,12 +265,14 @@ public class InstallationProcessTest {
 
         // verify that the new notification is stored as pending
         // requires confirming again to store the new notification as confirmed
-        assertNotNull(process.getPendingBootNotification());
-        assertEquals(updatedBoot, process.getPendingBootNotification());
-        assertNotEquals(someBootNotification, process.getPendingBootNotification());
-        assertEquals(someBootNotification, process.getConfirmedBootNotification());
+        var installationState  = process.getCurrentState();
 
-        assertThat(process.getEvents())
+        assertNotNull(installationState .pendingBootNotification());
+        assertEquals(updatedBoot, installationState .pendingBootNotification());
+        assertNotEquals(someBootNotification, installationState .pendingBootNotification());
+        assertEquals(someBootNotification, installationState .confirmedBootNotification());
+
+        assertThat(process.events)
                 .contains(new BootNotificationReceived(orderId, updatedBoot));
     }
 
@@ -279,11 +290,13 @@ public class InstallationProcessTest {
         process.receiveBootNotification(sameBoot);
 
         // then verify that it will be ignored
-        assertNull(process.getPendingBootNotification());
-        assertEquals(someBootNotification, process.getConfirmedBootNotification());
+        var installationState  = process.getCurrentState();
+
+        assertNull(installationState .pendingBootNotification());
+        assertEquals(someBootNotification, installationState .confirmedBootNotification());
 
         // event should be ignored
-        assertThat(process.getEvents())
+        assertThat(process.events)
                 .isEmpty();
     }
 
@@ -301,13 +314,15 @@ public class InstallationProcessTest {
         process.assignDevice(newDeviceId);
 
         // then verify new device is assigned correctly
-        assertEquals(newDeviceId, process.getDeviceId());
+        var installationState  = process.getCurrentState();
+
+        assertEquals(newDeviceId, installationState .deviceId());
 
         // then verify boot notification & boot notification confirming are needed
-        assertNull(process.getPendingBootNotification());
-        assertNull(process.getConfirmedBootNotification());
+        assertNull(installationState .pendingBootNotification());
+        assertNull(installationState .confirmedBootNotification());
 
-        assertThat(process.getEvents())
+        assertThat(process.events)
                 .contains(
                         new DeviceAssigned(orderId, newDeviceId),
                         new BootNotificationReceived(orderId, null),
@@ -326,7 +341,7 @@ public class InstallationProcessTest {
         // should throw exception
         assertThrows(IllegalStateException.class, () -> process.setLocation(someLocation()));
 
-        assertThat(process.getEvents())
+        assertThat(process.events)
                 .contains(new BootNotificationReceived(orderId, someBootNotification));
     }
 
@@ -345,12 +360,14 @@ public class InstallationProcessTest {
         process.assignDevice(newDeviceId);
 
         // then boot notification, confirmation & location are needed again
-        assertNull(process.getConfirmedBootNotification());
-        assertNull(process.getPendingBootNotification());
-        assertNull(process.getLocation());
-        assertEquals(newDeviceId, process.getDeviceId());
+        var installationState  = process.getCurrentState();
 
-        assertThat(process.getEvents())
+        assertNull(installationState .confirmedBootNotification());
+        assertNull(installationState .pendingBootNotification());
+        assertNull(installationState .location());
+        assertEquals(newDeviceId, installationState .deviceId());
+
+        assertThat(process.events)
                 .contains(
                         new DeviceAssigned(orderId, newDeviceId),
                         new BootNotificationReceived(orderId, null),
@@ -367,7 +384,7 @@ public class InstallationProcessTest {
         // installer, device, boot confirmation, location
         assertThrows(IllegalStateException.class, process::finish);
 
-        assertThat(process.getEvents())
+        assertThat(process.events)
                 .contains(new ProcessCreated(workOrder));
     }
 
@@ -386,9 +403,11 @@ public class InstallationProcessTest {
         process.finish();
 
         // then verify it has finished
-        assertTrue(process.isFinished());
+        var installationState  = process.getCurrentState();
 
-        assertThat(process.getEvents())
+        assertTrue(installationState .isFinished());
+
+        assertThat(process.events)
                 .contains(new InstallationFinished(orderId));
     }
 
@@ -407,7 +426,7 @@ public class InstallationProcessTest {
         process.receiveBootNotification(someBootNotification);
 
         // then verify that no event is emitted
-        assertThat(process.getEvents())
+        assertThat(process.events)
                 .isEmpty();
     }
 }

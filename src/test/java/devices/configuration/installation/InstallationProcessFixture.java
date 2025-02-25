@@ -1,4 +1,4 @@
-package installation;
+package devices.configuration.installation;
 
 import devices.configuration.device.Location;
 import devices.configuration.device.Ownership;
@@ -14,7 +14,7 @@ public class InstallationProcessFixture {
     static InstallationProcess given(WorkOrder workOrder, Consumer<InstallationProcess> customize) {
         var process = InstallationProcess.create(workOrder);
         customize.accept(process);
-        process.getEvents().clear();
+        process.events.clear();
         return process;
     }
 
