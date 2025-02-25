@@ -57,7 +57,7 @@ public class InstallationProcessTest {
         assertThat(process.getEvents())
                 .contains(
                         new ProcessCreated(workOrder),
-                        new DeviceAssigned(workOrder, deviceId));
+                        new DeviceAssigned(orderId, deviceId));
     }
 
     @Test
@@ -74,7 +74,7 @@ public class InstallationProcessTest {
         assertThat(process.getEvents())
                 .contains(
                         new ProcessCreated(workOrder),
-                        new InstallerAssigned(workOrder, installerId));
+                        new InstallerAssigned(orderId, installerId));
     }
 
     @Test
@@ -95,7 +95,7 @@ public class InstallationProcessTest {
         assertThrows(IllegalStateException.class, () -> process.assignInstaller(installerId));
 
         assertThat(process.getEvents())
-                .contains(new InstallationFinished(workOrder));
+                .contains(new InstallationFinished(orderId));
     }
 
     @Test
@@ -116,7 +116,7 @@ public class InstallationProcessTest {
         assertThrows(IllegalStateException.class, () -> process.assignDevice(deviceId));
 
         assertThat(process.getEvents())
-                .contains(new InstallationFinished(workOrder));
+                .contains(new InstallationFinished(orderId));
     }
 
     @Test
@@ -142,11 +142,11 @@ public class InstallationProcessTest {
         assertEquals(someBootNotification, process.getConfirmedBootNotification());
 
         assertThat(process.getEvents())
-                .contains(new InstallationFinished(workOrder));
+                .contains(new InstallationFinished(orderId));
         assertThat(process.getEvents())
                 .doesNotContain(
-                        new BootNotificationReceived(workOrder, newBoot),
-                        new BootNotificationConfirmed(workOrder, newBoot));
+                        new BootNotificationReceived(orderId, newBoot),
+                        new BootNotificationConfirmed(orderId, newBoot));
     }
 
     @Test
@@ -165,8 +165,8 @@ public class InstallationProcessTest {
         assertThat(process.getEvents())
                 .contains(
                         new ProcessCreated(workOrder),
-                        new DeviceAssigned(workOrder, deviceId),
-                        new BootNotificationReceived(workOrder, someBootNotification));
+                        new DeviceAssigned(orderId, deviceId),
+                        new BootNotificationReceived(orderId, someBootNotification));
     }
 
     @Test
@@ -181,7 +181,7 @@ public class InstallationProcessTest {
         assertThat(process.getEvents())
                 .contains(new ProcessCreated(workOrder));
         assertThat(process.getEvents())
-                .doesNotContain(new BootNotificationReceived(workOrder, someBootNotification));
+                .doesNotContain(new BootNotificationReceived(orderId, someBootNotification));
     }
 
     @Test
@@ -199,7 +199,7 @@ public class InstallationProcessTest {
         assertThat(process.getEvents())
                 .contains(
                         new ProcessCreated(workOrder),
-                        new DeviceAssigned(workOrder, newDeviceId));
+                        new DeviceAssigned(orderId, newDeviceId));
     }
 
     @Test
@@ -216,7 +216,7 @@ public class InstallationProcessTest {
         assertThat(process.getEvents())
                 .contains(
                         new ProcessCreated(workOrder),
-                        new DeviceAssigned(workOrder, deviceId));
+                        new DeviceAssigned(orderId, deviceId));
     }
 
     @Test
@@ -236,9 +236,9 @@ public class InstallationProcessTest {
         assertThat(process.getEvents())
                 .contains(
                         new ProcessCreated(workOrder),
-                        new DeviceAssigned(workOrder, deviceId),
-                        new BootNotificationReceived(workOrder, someBootNotification),
-                        new BootNotificationConfirmed(workOrder, someBootNotification));
+                        new DeviceAssigned(orderId, deviceId),
+                        new BootNotificationReceived(orderId, someBootNotification),
+                        new BootNotificationConfirmed(orderId, someBootNotification));
     }
 
     @Test
@@ -262,7 +262,7 @@ public class InstallationProcessTest {
         assertEquals(someBootNotification, process.getConfirmedBootNotification());
 
         assertThat(process.getEvents())
-                .contains(new BootNotificationReceived(workOrder, updatedBoot));
+                .contains(new BootNotificationReceived(orderId, updatedBoot));
     }
 
     @Test
@@ -309,9 +309,9 @@ public class InstallationProcessTest {
 
         assertThat(process.getEvents())
                 .contains(
-                        new DeviceAssigned(workOrder, newDeviceId),
-                        new BootNotificationReceived(workOrder, null),
-                        new BootNotificationConfirmed(workOrder, null));
+                        new DeviceAssigned(orderId, newDeviceId),
+                        new BootNotificationReceived(orderId, null),
+                        new BootNotificationConfirmed(orderId, null));
     }
 
     @Test
@@ -327,7 +327,7 @@ public class InstallationProcessTest {
         assertThrows(IllegalStateException.class, () -> process.setLocation(someLocation()));
 
         assertThat(process.getEvents())
-                .contains(new BootNotificationReceived(workOrder, someBootNotification));
+                .contains(new BootNotificationReceived(orderId, someBootNotification));
     }
 
     @Test
@@ -352,10 +352,10 @@ public class InstallationProcessTest {
 
         assertThat(process.getEvents())
                 .contains(
-                        new DeviceAssigned(workOrder, newDeviceId),
-                        new BootNotificationReceived(workOrder, null),
-                        new BootNotificationConfirmed(workOrder, null),
-                        new LocationChanged(workOrder, null));
+                        new DeviceAssigned(orderId, newDeviceId),
+                        new BootNotificationReceived(orderId, null),
+                        new BootNotificationConfirmed(orderId, null),
+                        new LocationChanged(orderId, null));
     }
 
     @Test
@@ -389,7 +389,7 @@ public class InstallationProcessTest {
         assertTrue(process.isFinished());
 
         assertThat(process.getEvents())
-                .contains(new InstallationFinished(workOrder));
+                .contains(new InstallationFinished(orderId));
     }
 
     @Test
