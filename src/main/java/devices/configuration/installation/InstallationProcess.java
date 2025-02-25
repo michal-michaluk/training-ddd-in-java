@@ -4,13 +4,11 @@ import devices.configuration.device.Location;
 import devices.configuration.device.Ownership;
 import devices.configuration.installation.DomainEvent.*;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-@Getter
 @AllArgsConstructor
 public class InstallationProcess {
 
@@ -123,5 +121,18 @@ public class InstallationProcess {
             events.add(new LocationChanged(orderId, null));
             location = null;
         }
+    }
+
+    public InstallationState getCurrentState() {
+        return new InstallationState(
+                orderId,
+                ownership,
+                installerId,
+                deviceId,
+                pendingBootNotification,
+                confirmedBootNotification,
+                location,
+                isFinished
+        );
     }
 }
